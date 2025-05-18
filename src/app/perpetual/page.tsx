@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/store';
 import { selectMarketPair } from '@/store/slices/marketSlice';
 import { useGetPerpetualPairsQuery, useGetPerpetualMarkPriceQuery, useGetPositionQuery } from '@/services/perpetualService';
@@ -153,28 +152,46 @@ const STATIC_MARKET_DATA = {
 };
 
 export default function PerpetualTradingPage() {
-  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const selectedPair = useAppSelector((state) => state.market.selectedPair);
   const [leverage, setLeverage] = useState(5);
-  
+
   const { data: perpetualPairs, isLoading: isLoadingPairs, isError: isPairsError } = useGetPerpetualPairsQuery();
   const { data: markPrice, isError: isMarkPriceError } = useGetPerpetualMarkPriceQuery(selectedPair || '', { skip: !selectedPair });
   const { data: position, isError: isPositionError } = useGetPositionQuery(selectedPair || '', { skip: !selectedPair });
-  
+
   const effectivePerpetualPairs = isPairsError || !perpetualPairs ? STATIC_MARKET_DATA.pairs : perpetualPairs;
   const effectiveMarkPrice = isMarkPriceError || !markPrice ? STATIC_MARKET_DATA.markPrice : markPrice;
   const effectivePosition = isPositionError || !position ? STATIC_MARKET_DATA.position : position;
-  
+
+  // useEffect(() => {
+  //   const symbolFromUrl = searchParams?.get('symbol');
+
+  //   // if (symbolFromUrl && effectivePerpetualPairs && Object.keys(effectivePerpetualPairs).length > 0 && effectivePerpetualPairs[symbolFromUrl]) {
+  //   //   dispatch(selectMarketPair(symbolFromUrl));
+  //   // } else if (effectivePerpetualPairs && Object.keys(effectivePerpetualPairs).length > 0 && !selectedPair) {
+  //   //   dispatch(selectMarketPair(Object.keys(effectivePerpetualPairs)[0]));
+  //   // }
+
+  //   if (symbolFromUrl && effectivePerpetualPairs && symbolFromUrl in effectivePerpetualPairs) {
+  //     dispatch(selectMarketPair(symbolFromUrl));
+  //   } else if (effectivePerpetualPairs && Object.keys(effectivePerpetualPairs).length > 0 && !selectedPair) {
+  //     dispatch(selectMarketPair(Object.keys(effectivePerpetualPairs)[0]));
+  //   }
+
+  // }, [searchParams, effectivePerpetualPairs, selectedPair, dispatch]);
+
+
   useEffect(() => {
-    const symbolFromUrl = searchParams?.get('symbol');
-    
-    if (symbolFromUrl && effectivePerpetualPairs && effectivePerpetualPairs[symbolFromUrl]) {
+    const symbolFromUrl = "";
+    const defaultPair = Object.keys(effectivePerpetualPairs)[0];
+
+    if (symbolFromUrl && symbolFromUrl in effectivePerpetualPairs) {
       dispatch(selectMarketPair(symbolFromUrl));
-    } else if (effectivePerpetualPairs && Object.keys(effectivePerpetualPairs).length > 0 && !selectedPair) {
-      dispatch(selectMarketPair(Object.keys(effectivePerpetualPairs)[0]));
+    } else if (!selectedPair && defaultPair) {
+      dispatch(selectMarketPair(defaultPair));
     }
-  }, [searchParams, effectivePerpetualPairs, selectedPair, dispatch]);
+  }, [ effectivePerpetualPairs, selectedPair]);
 
   if (isLoadingPairs && !effectivePerpetualPairs) {
     return (
@@ -196,137 +213,151 @@ export default function PerpetualTradingPage() {
     );
   }
 
-  const currentPair = selectedPair ? effectivePerpetualPairs[selectedPair] : null;
+  const currentPair = selectedPair
+    ? effectivePerpetualPairs[selectedPair as keyof typeof effectivePerpetualPairs]
+    : null;
+
+
+
+
+
+  const formattedOrderBook = {
+    bids: STATIC_MARKET_DATA.orderBook.bids.map(bid => [bid[0], bid[1]] as [string, string]),
+    asks: STATIC_MARKET_DATA.orderBook.asks.map(ask => [ask[0], ask[1]] as [string, string])
+  };
 
   return (
-    <div className="container-custom py-4">
-      <div className="mb-4">
-        <MarketSelector 
-          pairs={effectivePerpetualPairs} 
-          selectedPair={selectedPair} 
-          onSelectPair={(pair) => dispatch(selectMarketPair(pair))}
-          type="perpetual"
-        />
-      </div>
-      
-      {currentPair && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <div className="lg:col-span-3">
-            {effectivePosition && (
-              <div className="card mb-4">
-                <PositionInfo position={effectivePosition} markPrice={effectiveMarkPrice} />
-              </div>
-            )}
-            
-            <div className="card mb-4 h-[500px]">
-              <PerpetualTradingView symbol={currentPair.symbol} />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="card h-[400px] overflow-hidden">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Order Book</h3>
-                <OrderBook data={STATIC_MARKET_DATA.orderBook} isPerpetual={true} />
-              </div>
-              
-              <div className="card h-[400px] overflow-hidden">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Recent Trades</h3>
-                <TradeHistory trades={STATIC_MARKET_DATA.recentTrades} isPerpetual={true} />
-              </div>
-            </div>
-          </div>
-            
-          <div className="lg:col-span-1">
-            <div className="card sticky top-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {currentPair.baseAsset}/{currentPair.quoteAsset}
-                </h3>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="block">Max Leverage: {currentPair.maxLeverage}x</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {currentPair.markPrice}
-                  </span>
-                  <span className={`ml-2 text-sm font-medium ${
-                    parseFloat(currentPair.priceChangePercent) >= 0 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {currentPair.priceChangePercent}%
-                  </span>
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  <div>24h High: {currentPair.high24h}</div>
-                  <div>24h Low: {currentPair.low24h}</div>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  <span>Mark Price: {effectiveMarkPrice?.markPrice || currentPair.markPrice}</span>
-                  <span>Index Price: {effectiveMarkPrice?.indexPrice || currentPair.indexPrice}</span>
-                </div>
-                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                  <span>Funding Rate: {effectiveMarkPrice?.fundingRate || currentPair.lastFundingRate}</span>
-                  <span>Next Funding: {new Date(currentPair.nextFundingTime).toLocaleTimeString()}</span>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <LeverageSelector 
-                  value={leverage}
-                  onChange={setLeverage}
-                  maxLeverage={currentPair.maxLeverage}
-                  symbol={currentPair.symbol}
-                />
-              </div>
-              
-              <Tab.Group>
-                <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-dark-200 p-1 mb-4">
-                  <Tab className={({ selected }) =>
-                    `w-full rounded-lg py-2 text-sm font-medium leading-5 
-                    ${selected 
-                      ? 'bg-white dark:bg-dark-300 shadow text-primary-600 dark:text-primary-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-400'
-                    }`
-                  }>
-                    Long
-                  </Tab>
-                  <Tab className={({ selected }) =>
-                    `w-full rounded-lg py-2 text-sm font-medium leading-5 
-                    ${selected 
-                      ? 'bg-white dark:bg-dark-300 shadow text-red-600 dark:text-red-400' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-white/[0.12] hover:text-red-600 dark:hover:text-red-400'
-                    }`
-                  }>
-                    Short
-                  </Tab>
-                </Tab.List>
-                <Tab.Panels>
-                  <Tab.Panel>
-                    <PerpetualOrderForm 
-                      pair={currentPair} 
-                      leverage={leverage}
-                      side="long"
-                    />
-                  </Tab.Panel>
-                  <Tab.Panel>
-                    <PerpetualOrderForm 
-                      pair={currentPair} 
-                      leverage={leverage}
-                      side="short"
-                    />
-                  </Tab.Panel>
-                </Tab.Panels>
-              </Tab.Group>
-            </div>
-          </div>
+    <Suspense fallback={<LoadingSpinner size="sm" />}>
+      <div className="container-custom py-4">
+
+        <div className="mb-4">
+          <MarketSelector
+            pairs={effectivePerpetualPairs}
+            selectedPair={selectedPair}
+            onSelectPair={(pair) => dispatch(selectMarketPair(pair))}
+            type="perpetual"
+          />
         </div>
-      )}
-    </div>
+
+        {currentPair && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-3">
+              {effectivePosition && (
+                <div className="card mb-4">
+                  <PositionInfo position={effectivePosition} markPrice={effectiveMarkPrice} />
+                </div>
+              )}
+
+              <div className="card mb-4 h-[500px]">
+                <PerpetualTradingView symbol={currentPair.symbol} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="card h-[400px] overflow-hidden">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Order Book</h3>
+                  <OrderBook data={formattedOrderBook} isPerpetual={true} />
+                </div>
+
+                <div className="card h-[400px] overflow-hidden">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Recent Trades</h3>
+                  <TradeHistory trades={STATIC_MARKET_DATA.recentTrades} isPerpetual={true} />
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className="card sticky top-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {currentPair.baseAsset}/{currentPair.quoteAsset}
+                  </h3>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="block">Max Leverage: {currentPair.maxLeverage}x</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {currentPair.markPrice}
+                    </span>
+                    <span className={`ml-2 text-sm font-medium ${parseFloat(currentPair.priceChangePercent) >= 0
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                      }`}>
+                      {currentPair.priceChangePercent}%
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div>24h High: {currentPair.high24h}</div>
+                    <div>24h Low: {currentPair.low24h}</div>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <span>Mark Price: {effectiveMarkPrice?.markPrice || currentPair.markPrice}</span>
+                    <span>Index Price: {effectiveMarkPrice?.indexPrice || currentPair.indexPrice}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                    <span>Funding Rate: {effectiveMarkPrice?.fundingRate || currentPair.lastFundingRate}</span>
+                    <span>Next Funding: {new Date(currentPair.nextFundingTime).toLocaleTimeString()}</span>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <LeverageSelector
+                    value={leverage}
+                    onChange={setLeverage}
+                    maxLeverage={currentPair.maxLeverage}
+                    symbol={currentPair.symbol}
+                  />
+                </div>
+
+                <Tab.Group>
+                  <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-dark-200 p-1 mb-4">
+                    <Tab className={({ selected }) =>
+                      `w-full rounded-lg py-2 text-sm font-medium leading-5 
+                    ${selected
+                        ? 'bg-white dark:bg-dark-300 shadow text-primary-600 dark:text-primary-400'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-400'
+                      }`
+                    }>
+                      Long
+                    </Tab>
+                    <Tab className={({ selected }) =>
+                      `w-full rounded-lg py-2 text-sm font-medium leading-5 
+                    ${selected
+                        ? 'bg-white dark:bg-dark-300 shadow text-red-600 dark:text-red-400'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-white/[0.12] hover:text-red-600 dark:hover:text-red-400'
+                      }`
+                    }>
+                      Short
+                    </Tab>
+                  </Tab.List>
+                  <Tab.Panels>
+                    <Tab.Panel>
+                      <PerpetualOrderForm
+                        pair={currentPair}
+                        leverage={leverage}
+                        side="long"
+                      />
+                    </Tab.Panel>
+                    <Tab.Panel>
+                      <PerpetualOrderForm
+                        pair={currentPair}
+                        leverage={leverage}
+                        side="short"
+                      />
+                    </Tab.Panel>
+                  </Tab.Panels>
+                </Tab.Group>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </Suspense >
   );
 } 

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useState, Suspense } from 'react';
+// import { useSearchParams } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/store/store';
 import { selectMarketPair } from '@/store/slices/marketSlice';
 import { useGetAllMarketPairsQuery, useGetOrderBookQuery, useGetRecentTradesQuery } from '@/services/spotService';
@@ -105,27 +105,31 @@ const STATIC_MARKET_DATA = {
 };
 
 export default function SpotTradingPage() {
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const selectedPair = useAppSelector((state) => state.market.selectedPair);
-  
+
   const { data: marketPairs, isLoading: isLoadingPairs, isError: isPairsError } = useGetAllMarketPairsQuery();
   const { data: orderBook, isError: isOrderBookError } = useGetOrderBookQuery(selectedPair || '', { skip: !selectedPair });
   const { data: recentTrades, isError: isTradesError } = useGetRecentTradesQuery({ symbol: selectedPair || '' }, { skip: !selectedPair });
-  
+
   const effectiveMarketPairs = isPairsError || !marketPairs ? STATIC_MARKET_DATA.pairs : marketPairs;
   const effectiveOrderBook = isOrderBookError || !orderBook ? STATIC_MARKET_DATA.orderBook : orderBook;
   const effectiveRecentTrades = isTradesError || !recentTrades ? STATIC_MARKET_DATA.recentTrades : recentTrades;
-  
+
+
   useEffect(() => {
-    const symbolFromUrl = searchParams?.get('symbol');
-    
-    if (symbolFromUrl && effectiveMarketPairs && effectiveMarketPairs[symbolFromUrl]) {
+    // const symbolFromUrl = searchParams?.get('symbol');
+    const symbolFromUrl = "";
+    const defaultPair = Object.keys(effectiveMarketPairs)[0];
+
+    if (symbolFromUrl && symbolFromUrl in effectiveMarketPairs) {
       dispatch(selectMarketPair(symbolFromUrl));
-    } else if (effectiveMarketPairs && Object.keys(effectiveMarketPairs).length > 0 && !selectedPair) {
-      dispatch(selectMarketPair(Object.keys(effectiveMarketPairs)[0]));
+    } else if (!selectedPair && defaultPair) {
+      dispatch(selectMarketPair(defaultPair));
     }
-  }, [searchParams, effectiveMarketPairs, selectedPair, dispatch]);
+  }, [effectiveMarketPairs, selectedPair]);
+
 
   if (isLoadingPairs && !effectiveMarketPairs) {
     return (
@@ -147,75 +151,90 @@ export default function SpotTradingPage() {
     );
   }
 
-  const currentPair = selectedPair ? effectiveMarketPairs[selectedPair] : null;
+  const currentPair = selectedPair
+    ? effectiveMarketPairs[selectedPair as keyof typeof effectiveMarketPairs]
+    : null;
+
+
+
+
+  const formattedOrderBook = {
+    bids: effectiveOrderBook.bids.map(bid => [bid[0], bid[1]] as [string, string]),
+    asks: effectiveOrderBook.asks.map(ask => [ask[0], ask[1]] as [string, string])
+  };
+
 
   return (
-    <div className="container-custom py-4">
-      <div className="mb-4">
-        <MarketSelector 
-          pairs={effectiveMarketPairs} 
-          selectedPair={selectedPair} 
-          onSelectPair={(pair) => dispatch(selectMarketPair(pair))}
-        />
-      </div>
-      
-      {currentPair && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <div className="lg:col-span-3">
-            <div className="card mb-4 h-[500px]">
-              <SpotTradingView symbol={currentPair.symbol} />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="card h-[400px] overflow-hidden">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Order Book</h3>
-                <OrderBook data={effectiveOrderBook} />
-              </div>
-              
-              <div className="card h-[400px] overflow-hidden">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Recent Trades</h3>
-                <TradeHistory trades={effectiveRecentTrades || []} />
-              </div>
-            </div>
-            
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Open Orders</h3>
-              <OpenOrders />
-            </div>
-          </div>
-              
-          <div className="lg:col-span-1">
-            <div className="card sticky top-4">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                {currentPair.baseAsset}/{currentPair.quoteAsset}
-              </h3>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {currentPair.lastPrice}
-                  </span>
-                  <span className={`ml-2 text-sm font-medium ${
-                    parseFloat(currentPair.priceChangePercent) >= 0 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {currentPair.priceChangePercent}%
-                  </span>
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  <div>24h High: {currentPair.high}</div>
-                  <div>24h Low: {currentPair.low}</div>
-                </div>
-              </div>
-              
-              <SpotOrderForm 
-                pair={currentPair} 
-                orderBook={effectiveOrderBook}
-              />
-            </div>
-          </div>
+    <Suspense fallback={<LoadingSpinner size="lg" />}>
+      <div className="container-custom py-4">
+
+        <div className="mb-4">
+          <MarketSelector
+            pairs={effectiveMarketPairs}
+            selectedPair={selectedPair}
+            onSelectPair={(pair) => dispatch(selectMarketPair(pair))}
+          />
         </div>
-      )}
-    </div>
+
+
+        {currentPair && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-3">
+              <div className="card mb-4 h-[500px]">
+                <SpotTradingView symbol={currentPair.symbol} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="card h-[400px] overflow-hidden">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Order Book</h3>
+                  <OrderBook data={formattedOrderBook} />
+                </div>
+
+                <div className="card h-[400px] overflow-hidden">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Recent Trades</h3>
+                  <TradeHistory trades={effectiveRecentTrades || []} />
+                </div>
+              </div>
+
+              <div className="card">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Open Orders</h3>
+                <OpenOrders />
+              </div>
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className="card sticky top-4">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                  {currentPair.baseAsset}/{currentPair.quoteAsset}
+                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {currentPair.lastPrice}
+                    </span>
+                    <span className={`ml-2 text-sm font-medium ${parseFloat(currentPair.priceChangePercent) >= 0
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                      }`}>
+                      {currentPair.priceChangePercent}%
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div>24h High: {currentPair.high}</div>
+                    <div>24h Low: {currentPair.low}</div>
+                  </div>
+                </div>
+
+                <SpotOrderForm
+                  pair={currentPair}
+                  orderBook={effectiveOrderBook}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </Suspense>
   );
 } 

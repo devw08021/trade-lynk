@@ -6,7 +6,7 @@ import { useClosePositionMutation } from '@/services/perpetualService';
 interface Position {
   id: string;
   symbol: string;
-  side: 'long' | 'short';
+  side: string;//'long' | 'short';
   size: string;
   entryPrice: string;
   markPrice: string;

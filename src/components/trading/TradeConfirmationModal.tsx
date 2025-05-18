@@ -9,7 +9,7 @@ export interface TradeConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  tradeType: 'buy' | 'sell';
+  tradeType:string; //'buy' | 'sell';
   coinPair: string;
   amount: number;
   price: number;

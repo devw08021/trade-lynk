@@ -46,3 +46,7 @@ next-env.d.ts
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+.yarn-integrity
+.yarn.lock
+package-lock.json
+yarn.lock

@@ -13,7 +13,7 @@ interface P2POffer {
     positiveRating: number;
     accountCreationDate: string;
   };
-  type: 'buy' | 'sell';
+  type: string; // 'buy' or 'sell'
   asset: string;
   fiatCurrency: string;
   price: string;
@@ -23,14 +23,14 @@ interface P2POffer {
   paymentMethods: string[];
   terms: string;
   autoReply?: string;
-  status: 'active' | 'inactive' | 'completed';
+  status: string;//'active' | 'inactive' | 'completed';
   createdAt: string;
   updatedAt: string;
 }
 
 interface P2POfferListProps {
   offers: P2POffer[];
-  tradeType: 'buy' | 'sell';
+  tradeType: string; // 'buy' or 'sell'
 }
 
 export default function P2POfferList({ offers, tradeType }: P2POfferListProps) {
@@ -101,11 +101,10 @@ export default function P2POfferList({ offers, tradeType }: P2POfferListProps) {
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                 <Link
                   href={`/p2p/trade/${offer.id}`}
-                  className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    tradeType === 'buy' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                  className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-full ${tradeType === 'buy'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                  }`}
+                    }`}
                 >
                   {tradeType === 'buy' ? 'Buy' : 'Sell'}
                 </Link>

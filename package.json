@@ -1,7 +1,7 @@
 {
   "name": "trade-app",
   "version": "1.0.0",
-  "description": "Next.js trading application for spot, perpetual, and P2P trading",
+  "description": "Trading application for spot, perpetual, and P2P trading",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,7 +13,20 @@
     "crypto",
     "blockchain",
     "web3",
-    "next.js"
+    "decentralized",
+    "finance",
+    "spot trading",
+    "perpetual trading",
+    "P2P trading",
+    "decentralized exchange",
+    "DEX",
+    "liquidity",
+    "order book",
+    "market making",
+    "arbitrage",
+    "trading strategies",
+    "portfolio management",
+    "risk management"
   ],
   "author": "",
   "license": "ISC",

@@ -16,7 +16,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 export interface WalletActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  actionType: 'deposit' | 'withdraw';
+  actionType:string; //'deposit' | 'withdraw';
   coin: {
     name: string;
     symbol: string;

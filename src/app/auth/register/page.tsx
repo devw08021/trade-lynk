@@ -7,6 +7,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import TermsModal from '@/components/ui/TermsModal';
 
+import { useRegisterMutation } from '@/services/userService';
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -19,10 +20,12 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsType, setTermsType] = useState<'terms' | 'privacy'>('terms');
+
+  const [register, { isLoading }] = useRegisterMutation();
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -30,7 +33,7 @@ export default function RegisterPage() {
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
-    
+
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -41,33 +44,33 @@ export default function RegisterPage() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
     } else if (formData.username.length < 3) {
       newErrors.username = 'Username must be at least 3 characters';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     if (!formData.agreeTerms) {
       newErrors.agreeTerms = 'You must agree to the terms';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -75,15 +78,14 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setGeneralError('');
-    
+
     if (!validateForm()) {
       return;
     }
-    
-    setIsLoading(true);
-    
+
+
     try {
-   
+
       // const response = await fetch('/api/auth/register', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
@@ -93,15 +95,20 @@ export default function RegisterPage() {
       //     password: formData.password,
       //   }),
       // });
-      
+
+      const { status, data, success } = await register({ ...formData }).unwrap();
+
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       router.push('/auth/login');
     } catch (error) {
       console.error('Registration error:', error);
-      setGeneralError('Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      if (error?.data?.error) {
+        setGeneralError(error.data.error);
+        return;
+      } else {
+        setGeneralError('An error occurred. Please try again.');
+      }
     }
   };
 
@@ -119,13 +126,13 @@ export default function RegisterPage() {
             Join our platform to start trading cryptocurrencies
           </p>
         </div>
-        
+
         {generalError && (
           <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 mb-4">
             <p className="text-red-700 dark:text-red-400">{generalError}</p>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -141,16 +148,15 @@ export default function RegisterPage() {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${
-                    errors.username ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                  } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm`}
+                  className={`block w-full px-3 py-2 border ${errors.username ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
+                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm`}
                 />
                 {errors.username && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.username}</p>
                 )}
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email address
@@ -164,16 +170,15 @@ export default function RegisterPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${
-                    errors.email ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                  } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm`}
+                  className={`block w-full px-3 py-2 border ${errors.email ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
+                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm`}
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
                 )}
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
@@ -187,9 +192,8 @@ export default function RegisterPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${
-                    errors.password ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                  } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10`}
+                  className={`block w-full px-3 py-2 border ${errors.password ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
+                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10`}
                 />
                 <button
                   type="button"
@@ -207,7 +211,7 @@ export default function RegisterPage() {
                 )}
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Confirm Password
@@ -221,9 +225,8 @@ export default function RegisterPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${
-                    errors.confirmPassword ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                  } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10`}
+                  className={`block w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
+                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10`}
                 />
                 <button
                   type="button"
@@ -241,7 +244,7 @@ export default function RegisterPage() {
                 )}
               </div>
             </div>
-                  
+
             <div className="flex items-start">
               <div className="flex items-center h-5">
                 <input
@@ -256,9 +259,9 @@ export default function RegisterPage() {
               <div className="ml-3 text-sm">
                 <label htmlFor="agreeTerms" className="font-medium text-gray-700 dark:text-gray-300">
                   I agree to the{' '}
-                  <button 
-                    type="button" 
-                    onClick={() => openTermsModal('terms')} 
+                  <button
+                    type="button"
+                    onClick={() => openTermsModal('terms')}
                     className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
                   >
                     Terms of Service
@@ -278,7 +281,7 @@ export default function RegisterPage() {
               </div>
             </div>
           </div>
-          
+
           <div>
             <button
               type="submit"
@@ -296,7 +299,7 @@ export default function RegisterPage() {
             </button>
           </div>
         </form>
-        
+
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}

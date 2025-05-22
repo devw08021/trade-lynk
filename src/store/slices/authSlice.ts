@@ -6,6 +6,9 @@ export interface User {
   username: string;
   firstName?: string;
   lastName?: string;
+  bio?: string;
+  role: string;
+  avatar?: string;
   profilePicture?: string;
   kycVerified: boolean;
   twoFactorEnabled: boolean;
@@ -21,9 +24,13 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: null,
+  user: typeof window !== 'undefined' && localStorage.getItem('user') 
+    ? JSON.parse(localStorage.getItem('user')!) 
+    : null,
   token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  isAuthenticated: false,
+  isAuthenticated: typeof window !== 'undefined' 
+    ? localStorage.getItem('token') !== null
+    : false,
   isLoading: false,
   error: null,
 };
@@ -45,6 +52,9 @@ const authSlice = createSlice({
       
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', action.payload.token);
+      }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
       }
     },
     loginFailure: (state, action: PayloadAction<string>) => {

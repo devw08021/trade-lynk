@@ -25,6 +25,7 @@ interface UpdateProfileRequest {
   username?: string;
   email?: string;
   profilePicture?: string;
+  bio?: string;
 }
 
 interface EnableTwoFactorResponse {
@@ -63,7 +64,7 @@ export const userApi = createApi({
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
-        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/login`,
+        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/auth/login`,
         method: 'POST',
         body: credentials,
       }),
@@ -71,7 +72,7 @@ export const userApi = createApi({
     
     register: builder.mutation<AuthResponse, RegisterRequest>({
       query: (userData) => ({
-        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/register`,
+        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/auth/register`,
         method: 'POST',
         body: userData,
       }),

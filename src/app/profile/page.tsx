@@ -6,49 +6,64 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/lib/hooks/use-toast';
+import { useToastContext } from '@/components/ui/ToastContext';
 import { useForm } from '@/lib/hooks/use-form';
 import { profileSchema, type ProfileFormData } from '@/lib/validations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { formatDate } from '@/lib/utils';
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  Shield, 
-  CreditCard, 
+import {
+  User,
+  Mail,
+  Calendar,
+  Shield,
+  CreditCard,
   Activity,
   Settings,
   Bell,
   Key
 } from 'lucide-react';
+import { useAppSelector } from '@/store/store';
+import { useUpdateProfileMutation } from '@/services/userService';
+
 
 export default function ProfilePage() {
-  const { success, error } = useToast();
+  const { success, error } = useToastContext();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
 
+  const user = useAppSelector((state) => state.auth.user);
+  const username = user?.username || '';
+  const email = user?.email || '';
+  const bio = user?.bio || '';
+  const avatar = user?.avatar || '';
+  const firstName = user?.firstName || '';
+  const lastName = user?.lastName || '';
+
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+
+
   const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit } = useForm<ProfileFormData>({
     initialValues: {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      username: 'johndoe',
-      bio: 'Trading enthusiast and crypto investor',
-      avatar: '/avatars/default.png'
+      name: username,
+      email: email,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
+      bio: bio,
+      avatar: avatar
     },
     validationSchema: profileSchema,
     onSubmit: async (data) => {
+
       try {
-        // TODO: Implement API call
-        console.log('Saving profile:', data);
+        const result = await updateProfile(data).unwrap();
         success('Profile updated successfully');
         setIsEditing(false);
       } catch (err) {
         error('Failed to update profile');
       }
-    },
+    }
+
   });
 
   const stats = [
@@ -143,16 +158,16 @@ export default function ProfilePage() {
                       <Label htmlFor="name">Full Name</Label>
                       {isEditing ? (
                         <Input
-                          id="name"
-                          value={values.name}
-                          onChange={(e) => handleChange('name', e.target.value)}
-                          onBlur={() => handleBlur('name')}
+                          id="firstName"
+                          value={values.firstName}
+                          onChange={(e) => handleChange('firstName', e.target.value)}
+                          onBlur={() => handleBlur('firstName')}
                         />
                       ) : (
-                        <p className="text-lg">{values.name}</p>
+                        <p className="text-lg">{values.firstName}</p>
                       )}
-                      {touched.name && errors.name && (
-                        <p className="text-sm text-red-500">{errors.name}</p>
+                      {touched.firstName && errors.firstName && (
+                        <p className="text-sm text-red-500">{errors.firstName}</p>
                       )}
                     </div>
 

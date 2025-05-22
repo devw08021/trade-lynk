@@ -9,11 +9,13 @@ export const profileSchema = z.object({
     .min(3, "Username must be at least 3 characters")
     .max(30, "Username must be less than 30 characters")
     .regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscores, and hyphens"),
+  firstName: z.string().min(1, "First name is required").optional(),
+  // lastName: z.string().min(1, "Last name is required").optional(),
   bio: z.string().max(160, "Bio must be less than 160 characters").optional(),
-  avatar: z
-    .string()
-    .url("Invalid avatar URL")
-    .optional(),
+  // avatar: z
+  //   .string()
+  //   .url("Invalid avatar URL")
+  //   .optional(),
 })
 
 export const settingsSchema = z.object({

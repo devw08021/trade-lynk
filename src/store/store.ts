@@ -34,6 +34,8 @@ export const store = configureStore({
       p2pApi.middleware,
       walletApi.middleware
     ),
+  devTools: process.env.NODE_ENV !== 'production', //  Enable devtools only in development
+
 });
 
 setupListeners(store.dispatch);

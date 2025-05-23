@@ -79,7 +79,7 @@ export const userApi = createApi({
     }),
     
     getCurrentUser: builder.query<User, void>({
-      query: () => `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/me`,
+      query: () => `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/profile`,
       providesTags: ['User'],
     }),
     

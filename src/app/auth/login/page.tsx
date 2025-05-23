@@ -6,23 +6,27 @@ import { useRouter } from 'next/navigation';
 import { useLoginMutation } from '@/services/userService';
 import { useAppDispatch } from '@/store/store';
 import { loginSuccess } from '@/store/slices/authSlice';
+import { useToastContext } from '@/components/ui/ToastContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { success, error } = useToastContext();
   const [login, { isLoading }] = useLoginMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-    
+
     try {
-      const result = await login({ email, password }).unwrap();
+      const { success: apiStatus, result, message } = await login({ email, password }).unwrap();
+      if (message)
+        success(`${message}`);
       dispatch(loginSuccess(result));
       router.push('/');
     } catch (error: any) {
@@ -44,13 +48,13 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-        
+
         {errorMessage && (
           <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 mb-4">
             <p className="text-sm text-red-700 dark:text-red-400">{errorMessage}</p>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -118,7 +122,7 @@ export default function LoginPage() {
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
-          
+
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

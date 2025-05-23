@@ -6,7 +6,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { ToastProvider } from '@/components/ui/ToastContext';
 import ToastContainer from '@/components/ui/ToastContainer';
-
+import PageTracker from '@/components/layout/PageTracker';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -24,6 +24,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <ToastProvider>
+            <PageTracker />
             <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-400">
               <Header />
               <main className="flex-grow">{children}</main>

@@ -32,19 +32,20 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('personal');
 
   const user = useAppSelector((state) => state.auth.user);
-  const username = user?.username || '';
-  const email = user?.email || '';
-  const bio = user?.bio || '';
-  const avatar = user?.avatar || '';
-  const firstName = user?.firstName || '';
-  const lastName = user?.lastName || '';
+  console.log("🚀 ~ ProfilePage ~ user:", user)
+  let username = user?.username || '';
+  let email = user?.email || '';
+  let bio = user?.bio || '';
+  let avatar = user?.avatar || '';
+  let firstName = user?.firstName || '';
+  let lastName = user?.lastName || '';
 
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
 
   const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit } = useForm<ProfileFormData>({
     initialValues: {
-      name: username,
+      name: user?.username || '',
       email: email,
       username: username,
       firstName: firstName,
@@ -56,8 +57,13 @@ export default function ProfilePage() {
     onSubmit: async (data) => {
 
       try {
-        const result = await updateProfile(data).unwrap();
-        success('Profile updated successfully');
+        const { success: apiStatus, result, message } = await updateProfile(data).unwrap();
+        if (apiStatus) {
+          success('Profile updated successfully');
+        }
+        if (message) {
+          success(`${message}`);
+        }
         setIsEditing(false);
       } catch (err) {
         error('Failed to update profile');

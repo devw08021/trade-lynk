@@ -24,11 +24,9 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: typeof window !== 'undefined' && localStorage.getItem('user') 
-    ? JSON.parse(localStorage.getItem('user')!) 
-    : null,
+  user: null,
   token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  isAuthenticated: typeof window !== 'undefined' 
+  isAuthenticated: typeof window !== 'undefined'
     ? localStorage.getItem('token') !== null
     : false,
   isLoading: false,
@@ -49,13 +47,13 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.error = null;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', action.payload.token);
       }
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
-      }
+      // if (typeof window !== 'undefined') {
+      //   localStorage.setItem('user', JSON.stringify(action.payload.user));
+      // }
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -74,7 +72,7 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.error = null;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', action.payload.token);
       }
@@ -87,14 +85,14 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
-      
+
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
       }
     },
     updateUserProfile: (state, action: PayloadAction<Partial<User>>) => {
-      if (state.user) {
-        state.user = { ...state.user, ...action.payload };
+      if (action.payload) {
+        state.user = { ...action.payload };
       }
     },
   },

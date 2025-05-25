@@ -52,11 +52,11 @@ export const userApi = createApi({
     baseUrl: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
-      
+
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
-      
+
       return headers;
     },
   }),
@@ -69,7 +69,7 @@ export const userApi = createApi({
         body: credentials,
       }),
     }),
-    
+
     register: builder.mutation<AuthResponse, RegisterRequest>({
       query: (userData) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/auth/register`,
@@ -77,12 +77,12 @@ export const userApi = createApi({
         body: userData,
       }),
     }),
-    
+
     getCurrentUser: builder.query<User, void>({
       query: () => `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/profile`,
       providesTags: ['User'],
     }),
-    
+
     updateProfile: builder.mutation<User, UpdateProfileRequest>({
       query: (profile) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/profile`,
@@ -91,7 +91,18 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['User'],
     }),
-    
+
+    //password update
+    updatePassword: builder.mutation<{ success: boolean }, { currentPassword: string; newPassword: string }>({
+      query: (data) => ({
+        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/updatePassword`,
+        method: 'POST',
+        body: data,
+      }),
+
+      invalidatesTags: ['User'],
+    }),
+
     enableTwoFactor: builder.mutation<EnableTwoFactorResponse, void>({
       query: () => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/two-factor/enable`,
@@ -99,7 +110,7 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['TwoFactor'],
     }),
-    
+
     verifyTwoFactor: builder.mutation<{ success: boolean }, VerifyTwoFactorRequest>({
       query: (data) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/two-factor/verify`,
@@ -108,7 +119,7 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['TwoFactor', 'User'],
     }),
-    
+
     disableTwoFactor: builder.mutation<{ success: boolean }, VerifyTwoFactorRequest>({
       query: (data) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/two-factor/disable`,
@@ -117,14 +128,14 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['TwoFactor', 'User'],
     }),
-    
+
     submitKyc: builder.mutation<{ success: boolean, status: string }, KycRequest>({
       query: (data) => {
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => {
           formData.append(key, value);
         });
-        
+
         return {
           url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/kyc/submit`,
           method: 'POST',
@@ -133,16 +144,16 @@ export const userApi = createApi({
       },
       invalidatesTags: ['KYC', 'User'],
     }),
-    
+
     getKycStatus: builder.query<{ status: string, message?: string }, void>({
       query: () => `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/kyc/status`,
       providesTags: ['KYC'],
     }),
-    
+
     getNonce: builder.query<{ nonce: string }, string>({
       query: (address) => `/wallet/nonce?address=${address}`,
     }),
-    
+
     verifyWalletSignature: builder.mutation<AuthResponse, { address: string; signature: string }>({
       query: (data) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/wallet/verify`,
@@ -158,6 +169,7 @@ export const {
   useRegisterMutation,
   useGetCurrentUserQuery,
   useUpdateProfileMutation,
+  useUpdatePasswordMutation,
   useEnableTwoFactorMutation,
   useVerifyTwoFactorMutation,
   useDisableTwoFactorMutation,

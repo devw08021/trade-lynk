@@ -101,11 +101,11 @@ export default function RegisterPage() {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       router.push('/auth/login');
-    } catch (error) {
-      console.error('Registration error:', error);
-      if (error?.data?.error) {
-        setGeneralError(error.data.error);
-        return;
+    } catch (err) {
+      console.error('Registration error:', err.data?.errors?.fields);
+      if (err && (err as any).data?.errors || {}) {
+
+        setErrors({ ... (err as any).data?.errors?.fields || {} });
       } else {
         setGeneralError('An error occurred. Please try again.');
       }

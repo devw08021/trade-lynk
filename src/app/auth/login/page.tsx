@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
 
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -29,8 +30,13 @@ export default function LoginPage() {
         success(`${message}`);
       dispatch(loginSuccess(result));
       router.push('/');
-    } catch (error: any) {
-      setErrorMessage(error?.data?.message || 'Login failed. Please check your credentials.');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      if (err && (err as any).data?.errors || {}) {
+        setErrors({ ... (err as any).data?.errors?.fields || {} });
+      } else {
+        setErrorMessage('An error occurred. Please try again.');
+      }
     }
   };
 
@@ -72,6 +78,13 @@ export default function LoginPage() {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-dark-200 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
               />
+              {
+                errors.email && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.email}
+                  </p>
+                )
+              }
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
@@ -88,6 +101,13 @@ export default function LoginPage() {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-dark-200 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
               />
+              {
+                errors.password && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.password}
+                  </p>
+                )
+              }
             </div>
           </div>
 
@@ -101,6 +121,13 @@ export default function LoginPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-dark-100 rounded"
               />
+              {
+                errors.rememberMe && (
+                  <p className="ml-2 text-sm text-red-600 dark:text-red-400">
+                    {errors.rememberMe}
+                  </p>
+                )
+              }
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
                 Remember me
               </label>

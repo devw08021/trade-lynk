@@ -25,11 +25,18 @@ import {
 import { useAppSelector } from '@/store/store';
 import { useUpdateProfileMutation } from '@/services/userService';
 
+// component
+import TwoFactorModal from '@/components/ui/TwoFactorModal'
+import ChangePasswordModal from '@/components/profile/ChangePassword';
+
 
 export default function ProfilePage() {
   const { success, error } = useToastContext();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
+
+  //model
+  const [modelOpen, setModelOpen] = useState("");
 
   const user = useAppSelector((state) => state.auth.user);
   let username = user?.username || '';
@@ -293,7 +300,7 @@ export default function ProfilePage() {
                           Add an extra layer of security to your account
                         </p>
                       </div>
-                      <Button variant="outline">Enable 2FA</Button>
+                      <Button variant="outline" onClick={() => setModelOpen("twoFactor")}>Enable 2FA</Button>
                     </div>
                     <Separator />
                     <div className="flex items-center justify-between">
@@ -303,7 +310,7 @@ export default function ProfilePage() {
                           Update your password regularly to keep your account secure
                         </p>
                       </div>
-                      <Button variant="outline">Change Password</Button>
+                      <Button variant="outline" onClick={() => setModelOpen("changePassword")}>Change Password</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -335,6 +342,10 @@ export default function ProfilePage() {
             </TabsContent>
           </Tabs>
         </div>
+
+
+        <ChangePasswordModal isOpen={modelOpen === "changePassword"} onClose={() => setModelOpen("")} />
+        <TwoFactorModal isOpen={modelOpen === "twoFactor"} onClose={() => setModelOpen("")} />
       </div>
     </div>
   );

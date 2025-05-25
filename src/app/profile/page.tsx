@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('personal');
 
   const user = useAppSelector((state) => state.auth.user);
-  console.log("🚀 ~ ProfilePage ~ user:", user)
   let username = user?.username || '';
   let email = user?.email || '';
   let bio = user?.bio || '';
@@ -43,9 +42,10 @@ export default function ProfilePage() {
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
 
-  const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit } = useForm<ProfileFormData>({
+  const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit, reset } = useForm<ProfileFormData>({
+
     initialValues: {
-      name: user?.username || '',
+      name: username || '',
       email: email,
       username: username,
       firstName: firstName,
@@ -53,6 +53,7 @@ export default function ProfilePage() {
       bio: bio,
       avatar: avatar
     },
+    enableReinitialize: true,
     validationSchema: profileSchema,
     onSubmit: async (data) => {
 
@@ -72,6 +73,22 @@ export default function ProfilePage() {
 
   });
 
+
+  useEffect(() => {
+    // Reset form when editing state changes
+    if (user) {
+      reset({
+        name: user?.username || '',
+        email: user?.email || '',
+        username: user?.username || '',
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        bio: user?.bio || '',
+        avatar: user?.avatar || ''
+      });
+    }
+  }, [user]);
+  // Sample statistics data
   const stats = [
     { label: 'Total Trades', value: '1,234' },
     { label: 'Win Rate', value: '68%' },

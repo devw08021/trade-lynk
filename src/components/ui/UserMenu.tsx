@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -10,10 +10,18 @@ import { logout } from '@/store/slices/authSlice';
 export default function UserMenu() {
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout());
   };
+
+  // Wait until after mount to render to avoid hydration mismatch
+  if (!mounted) return null;
 
   return (
     <Menu as="div" className="relative inline-block text-left">

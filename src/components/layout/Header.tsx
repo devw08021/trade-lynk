@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -21,6 +21,14 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Wait for hydration before rendering
+  if (!mounted) return null;
 
   return (
     <header className="bg-white dark:bg-dark-300 shadow-sm">
@@ -53,7 +61,7 @@ export default function Header() {
           {/* Right side actions */}
           <div className="flex items-center gap-x-4">
             <ThemeToggle />
-            
+
             {isAuthenticated ? (
               <UserMenu />
             ) : (
@@ -72,7 +80,7 @@ export default function Header() {
                 </Link>
               </div>
             )}
-            
+
             {/* Mobile menu button */}
             <button
               type="button"
@@ -88,7 +96,7 @@ export default function Header() {
             </button>
           </div>
         </div>
-        
+
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-3 space-y-1">
@@ -106,7 +114,7 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-            
+
             {!isAuthenticated && (
               <div className="pt-4 pb-3 border-t border-gray-200 dark:border-dark-100">
                 <div className="grid grid-cols-2 gap-4 px-3 mt-4">
@@ -132,4 +140,4 @@ export default function Header() {
       </nav>
     </header>
   );
-} 
+}

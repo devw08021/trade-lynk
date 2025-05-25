@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import Cookies from 'js-cookie';
 
 export interface User {
   id: string;
@@ -24,11 +25,9 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: null,
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  isAuthenticated: typeof window !== 'undefined'
-    ? localStorage.getItem('token') !== null
-    : false,
+  user:  null,
+  token: Cookies.get('token') || null, // Retrieve token from cookies if available
+  isAuthenticated: !!Cookies.get('token'),
   isLoading: false,
   error: null,
 };
@@ -48,12 +47,8 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.error = null;
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', action.payload.token);
-      }
-      // if (typeof window !== 'undefined') {
-      //   localStorage.setItem('user', JSON.stringify(action.payload.user));
-      // }
+      Cookies.set('token', action.payload.token, { expires: 7 }); 
+      Cookies.set('user', JSON.stringify(action.payload.user), { expires: 7 });
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -91,10 +86,24 @@ const authSlice = createSlice({
       }
     },
     updateUserProfile: (state, action: PayloadAction<Partial<User>>) => {
-      if (action.payload) {
-        state.user = { ...action.payload };
+      if (action.payload) {     
+        state.user = { ...state.user, ...action.payload };
+        Cookies.set('user', JSON.stringify(action.payload), { expires: 7 });
       }
     },
+    setAuthState: (state, action: PayloadAction<{
+      token: string | null;
+      user: User | null;
+      isAuthenticated: boolean;
+    }>) => {
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+      state.isAuthenticated = action.payload.isAuthenticated;
+      state.isLoading = false;
+      state.error = null;
+    },
+
+
   },
 });
 
@@ -107,6 +116,7 @@ export const {
   registerFailure,
   logout,
   updateUserProfile,
+  setAuthState
 } = authSlice.actions;
 
 export default authSlice.reducer; 

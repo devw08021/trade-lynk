@@ -10,7 +10,7 @@ export default function PageTracker() {
     const router = useRouter();
     const pathname = usePathname();
     const dispatch = useAppDispatch();
-    const { isAuthenticated } = useAppSelector((state) => state.auth);
+    const { isAuthenticated, user } = useAppSelector((state) => state.auth);
 
     const { isLoading, refetch: getCurrentUser } = useGetCurrentUserQuery();
 
@@ -20,13 +20,13 @@ export default function PageTracker() {
             dispatch(updateUserProfile(result));
 
         } catch (error) {
-            console.log("🚀 ~ getUserDetails ~ error:", error)
+            console.error("🚀 ~ getUserDetails ~ error:", error)
 
         }
     };
     useEffect(() => {
         // Call your API on each page navigation
-        if (isAuthenticated)
+        if (isAuthenticated) 
             getUserDetails(pathname);
     }, [pathname]);
 

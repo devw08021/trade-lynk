@@ -104,7 +104,6 @@ export default function RegisterPage() {
     } catch (err) {
       console.error('Registration error:', err.data?.errors?.fields);
       if (err && (err as any).data?.errors || {}) {
-
         setErrors({ ... (err as any).data?.errors?.fields || {} });
       } else {
         setGeneralError('An error occurred. Please try again.');

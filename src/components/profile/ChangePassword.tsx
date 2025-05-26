@@ -88,6 +88,21 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordP
     }
   };
 
+  // Reset form and errors when modal is closed
+  React.useEffect(() => {
+    if (!isOpen) {
+      setForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        showCurrent: false,
+        showNew: false,
+        showConfirm: false,
+        loader: false,
+      });
+      setErrors({});
+    }
+  }, [isOpen]);
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Change Password" size="md">
       <div className="space-y-4">

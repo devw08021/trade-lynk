@@ -103,17 +103,20 @@ export const userApi = createApi({
       invalidatesTags: ['User'],
     }),
 
-    enableTwoFactor: builder.mutation<EnableTwoFactorResponse, void>({
-      query: () => ({
-        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/two-factor/enable`,
-        method: 'POST',
+
+    // Two-Factor Authentication
+    enableTwoFactor: builder.mutation<EnableTwoFactorResponse, VerifyTwoFactorRequest>({
+      query: (data) => ({
+        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/2fa/enable`,
+        method: 'PATCH',
+        body: data
       }),
       invalidatesTags: ['TwoFactor'],
     }),
 
-    verifyTwoFactor: builder.mutation<{ success: boolean }, VerifyTwoFactorRequest>({
+    getTwoFactor: builder.mutation<{ success: boolean }, VerifyTwoFactorRequest>({
       query: (data) => ({
-        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/two-factor/verify`,
+        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/2fa/code`,
         method: 'POST',
         body: data,
       }),
@@ -122,8 +125,8 @@ export const userApi = createApi({
 
     disableTwoFactor: builder.mutation<{ success: boolean }, VerifyTwoFactorRequest>({
       query: (data) => ({
-        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/two-factor/disable`,
-        method: 'POST',
+        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/2fa/disable`,
+        method: 'DELETE',
         body: data,
       }),
       invalidatesTags: ['TwoFactor', 'User'],
@@ -170,8 +173,8 @@ export const {
   useGetCurrentUserQuery,
   useUpdateProfileMutation,
   useUpdatePasswordMutation,
+  useGetTwoFactorMutation,
   useEnableTwoFactorMutation,
-  useVerifyTwoFactorMutation,
   useDisableTwoFactorMutation,
   useSubmitKycMutation,
   useGetKycStatusQuery,

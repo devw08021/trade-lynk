@@ -26,7 +26,7 @@ import { useAppSelector } from '@/store/store';
 import { useUpdateProfileMutation } from '@/services/userService';
 
 // component
-import TwoFactorModal from '@/components/ui/TwoFactorModal'
+import TwoFactorModal from '@/components/profile/TwoFactorModal'
 import ChangePasswordModal from '@/components/profile/ChangePassword';
 
 
@@ -74,7 +74,11 @@ export default function ProfilePage() {
         }
         setIsEditing(false);
       } catch (err) {
-        error('Failed to update profile');
+        if (err && (err as any).data?.errors || {}) {
+          setErrors({ ... (err as any).data?.errors?.fields || {} });
+        } else {
+          error('An error occurred. Please try again.');
+        }
       }
     }
 
@@ -300,7 +304,7 @@ export default function ProfilePage() {
                           Add an extra layer of security to your account
                         </p>
                       </div>
-                      <Button variant="outline" onClick={() => setModelOpen("twoFactor")}>Enable 2FA</Button>
+                      <Button variant="outline" onClick={() => setModelOpen("twoFactor")}>{user?.isTwoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}</Button>
                     </div>
                     <Separator />
                     <div className="flex items-center justify-between">

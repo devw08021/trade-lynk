@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ArrowRightIcon, ChartBarIcon, CurrencyDollarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
-  console.log("process.envprocess.env",process.env)
+  console.log("process.envprocess.env",process.env.NEXT_PUBLIC_USER_API_URL)
   return (
     <>
       {/* Hero Section */}

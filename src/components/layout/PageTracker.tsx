@@ -19,14 +19,14 @@ export default function PageTracker() {
             const { result } = await getCurrentUser().unwrap();
             dispatch(updateUserProfile(result));
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("🚀 ~ getUserDetails ~ error:", error)
 
         }
     };
     useEffect(() => {
         // Call your API on each page navigation
-        if (isAuthenticated) 
+        if (isAuthenticated)
             getUserDetails(pathname);
     }, [pathname]);
 

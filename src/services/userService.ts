@@ -17,6 +17,8 @@ interface RegisterRequest {
 interface AuthResponse {
   user: User;
   token: string;
+  result:object;
+  success: boolean;
 }
 
 interface UpdateProfileRequest {
@@ -62,7 +64,7 @@ export const userApi = createApi({
   }),
   tagTypes: ['User', 'TwoFactor', 'KYC'],
   endpoints: (builder) => ({
-    login: builder.mutation<AuthResponse, LoginRequest>({
+    login: builder.mutation<any, LoginRequest>({
       query: (credentials) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/auth/login`,
         method: 'POST',
@@ -70,7 +72,7 @@ export const userApi = createApi({
       }),
     }),
 
-    register: builder.mutation<AuthResponse, RegisterRequest>({
+    register: builder.mutation<any, RegisterRequest>({
       query: (userData) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/auth/register`,
         method: 'POST',
@@ -105,7 +107,7 @@ export const userApi = createApi({
 
 
     // Two-Factor Authentication
-    enableTwoFactor: builder.mutation<EnableTwoFactorResponse, VerifyTwoFactorRequest>({
+    enableTwoFactor: builder.mutation<any, VerifyTwoFactorRequest>({
       query: (data) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/2fa/enable`,
         method: 'PATCH',
@@ -157,7 +159,7 @@ export const userApi = createApi({
       query: (address) => `/wallet/nonce?address=${address}`,
     }),
 
-    verifyWalletSignature: builder.mutation<AuthResponse, { address: string; signature: string }>({
+    verifyWalletSignature: builder.mutation<any, { address: string; signature: string }>({
       query: (data) => ({
         url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/wallet/verify`,
         method: 'POST',

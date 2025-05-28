@@ -73,7 +73,7 @@ export default function ProfilePage() {
           success(`${message}`);
         }
         setIsEditing(false);
-      } catch (err) {
+      } catch (err: any) {
         if (err && (err as any).data?.errors || {}) {
           setErrors({ ... (err as any).data?.errors?.fields || {} });
         } else {

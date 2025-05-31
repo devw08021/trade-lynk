@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/lib/hooks/use-toast';
+import { useToastContext } from '@/components/ui/ToastContext';
 import { useForm } from '@/lib/hooks/use-form';
 import { settingsSchema, type SettingsFormData } from '@/lib/validations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { 
+import {
   Bell,
   Moon,
   Globe,
@@ -23,34 +23,58 @@ import {
   Mail,
   MessageSquare
 } from 'lucide-react';
+import { useAppSelector } from '@/store/store';
 import { SUPPORTED_LANGUAGES, TIMEZONES, TRADING_VIEWS } from '@/lib/constants';
+import { useUpdateUserSettingMutation } from '@/services/userService';
+
 
 export default function SettingsPage() {
-  const { success, error } = useToast();
+  const { success, error } = useToastContext();
   const [activeTab, setActiveTab] = useState('general');
 
-  const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit } = useForm<SettingsFormData>({
+  const { theme, language, timezone, currency,
+    siteNotifications, emailNotifications } = useAppSelector((state) => state.auth.userSetting);
+
+  const [updateUserSetting, { isLoading }] = useUpdateUserSettingMutation();
+
+  const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit, reset } = useForm<SettingsFormData>({
     initialValues: {
-      emailNotifications: true,
-      tradingNotifications: true,
+      emailNotifications: emailNotifications,
+      tradingNotifications: siteNotifications,
       twoFactorAuth: false,
-      darkMode: false,
-      language: 'en',
-      timezone: 'UTC',
+      theme: theme,
+      language: language,
+      timezone: timezone,
       tradingView: 'basic'
     },
     validationSchema: settingsSchema,
     onSubmit: async (data) => {
       try {
+        const { success: apiStatus, result, message } = await updateUserSetting(data).unwrap();
+        if (apiStatus) {
+          success('Profile updated successfully');
+        }
+        if (message) {
+          success(`${message}`);
+        }
         // TODO: Implement API call
         console.log('Saving settings:', data);
-        success('Settings updated successfully');
       } catch (err) {
         error('Failed to update settings');
       }
     },
   });
 
+  useEffect(() => {
+    // Reset form when editing state changes
+    if (theme) {
+      reset({
+        theme, language, timezone, currency,
+        siteNotifications, emailNotifications
+      });
+    }
+  }, [theme, language, timezone, currency,
+    siteNotifications, emailNotifications]);
   return (
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex justify-between items-center">
@@ -71,32 +95,32 @@ export default function SettingsPage() {
               <CardTitle className="text-lg">Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button 
-                variant={activeTab === 'general' ? 'secondary' : 'ghost'} 
+              <Button
+                variant={activeTab === 'general' ? 'secondary' : 'ghost'}
                 className="w-full justify-start"
                 onClick={() => setActiveTab('general')}
               >
                 <Layout className="mr-2 h-4 w-4" />
                 General
               </Button>
-              <Button 
-                variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} 
+              <Button
+                variant={activeTab === 'notifications' ? 'secondary' : 'ghost'}
                 className="w-full justify-start"
                 onClick={() => setActiveTab('notifications')}
               >
                 <Bell className="mr-2 h-4 w-4" />
                 Notifications
               </Button>
-              <Button 
-                variant={activeTab === 'appearance' ? 'secondary' : 'ghost'} 
+              <Button
+                variant={activeTab === 'appearance' ? 'secondary' : 'ghost'}
                 className="w-full justify-start"
                 onClick={() => setActiveTab('appearance')}
               >
                 <Eye className="mr-2 h-4 w-4" />
                 Appearance
               </Button>
-              <Button 
-                variant={activeTab === 'security' ? 'secondary' : 'ghost'} 
+              <Button
+                variant={activeTab === 'security' ? 'secondary' : 'ghost'}
                 className="w-full justify-start"
                 onClick={() => setActiveTab('security')}
               >
@@ -261,8 +285,10 @@ export default function SettingsPage() {
                         </p>
                       </div>
                       <Switch
-                        checked={values.darkMode}
-                        onCheckedChange={(checked) => handleChange('darkMode', checked)}
+                        checked={values?.theme == "dark"}
+                        onCheckedChange={(checked) =>
+                          handleChange('theme', checked ? "dark" : "light")
+                        }
                       />
                     </div>
                   </div>

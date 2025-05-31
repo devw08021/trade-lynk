@@ -18,6 +18,7 @@ export interface User {
 
 export interface AuthState {
   user: User | null;
+  userSetting: Object | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -25,7 +26,8 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
-  user:  null,
+  user: null,
+  userSetting: null,
   token: Cookies.get('token') || null, // Retrieve token from cookies if available
   isAuthenticated: !!Cookies.get('token'),
   isLoading: false,
@@ -47,7 +49,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.error = null;
 
-      Cookies.set('token', action.payload.token, { expires: 7 }); 
+      Cookies.set('token', action.payload.token, { expires: 7 });
       Cookies.set('user', JSON.stringify(action.payload.user), { expires: 7 });
     },
     loginFailure: (state, action: PayloadAction<string>) => {
@@ -86,9 +88,14 @@ const authSlice = createSlice({
       }
     },
     updateUserProfile: (state, action: PayloadAction<Partial<User>>) => {
-      if (action.payload) {     
+      if (action.payload) {
         state.user = { ...state.user, ...action.payload };
         Cookies.set('user', JSON.stringify(action.payload), { expires: 7 });
+      }
+    },
+    setUserSetting: (state, action: PayloadAction<{ key: string; value: any }>) => {
+      if (action.payload) {
+        state.userSetting = action.payload;
       }
     },
     setAuthState: (state, action: PayloadAction<{
@@ -116,6 +123,7 @@ export const {
   registerFailure,
   logout,
   updateUserProfile,
+  setUserSetting,
   setAuthState
 } = authSlice.actions;
 

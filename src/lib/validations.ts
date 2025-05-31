@@ -22,7 +22,7 @@ export const settingsSchema = z.object({
   emailNotifications: z.boolean(),
   tradingNotifications: z.boolean(),
   twoFactorAuth: z.boolean(),
-  darkMode: z.boolean(),
+  theme: z.string(),
   language: z.enum(["en", "es", "fr", "de"]),
   timezone: z.enum(["UTC", "EST", "PST", "GMT"]),
   tradingView: z.enum(["basic", "advanced", "professional"]),

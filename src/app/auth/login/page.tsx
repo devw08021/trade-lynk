@@ -29,7 +29,7 @@ export default function LoginPage() {
       if (message)
         success(`${message}`);
       dispatch(loginSuccess(result));
-      router.push('/');
+      router.push('/profile');
     } catch (err: any) {
       console.error('Registration error:', err);
       if (err && (err as any).data?.errors || {}) {

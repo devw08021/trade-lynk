@@ -4,12 +4,14 @@ import React, { Fragment, useEffect, useState } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { logout } from '@/store/slices/authSlice';
 
 export default function UserMenu() {
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -17,7 +19,12 @@ export default function UserMenu() {
   }, []);
 
   const handleLogout = () => {
-    dispatch(logout());
+    router.push('/auth/login');
+    setTimeout(() => {
+      dispatch(logout());
+    }, 500);
+
+
   };
 
   // Wait until after mount to render to avoid hydration mismatch
@@ -70,9 +77,8 @@ export default function UserMenu() {
                 {({ active }) => (
                   <Link
                     href={item.href}
-                    className={`${
-                      active ? 'bg-gray-100 dark:bg-dark-300' : ''
-                    } block px-4 py-2 text-sm text-gray-700 dark:text-gray-300`}
+                    className={`${active ? 'bg-gray-100 dark:bg-dark-300' : ''
+                      } block px-4 py-2 text-sm text-gray-700 dark:text-gray-300`}
                   >
                     {item.label}
                   </Link>
@@ -85,9 +91,8 @@ export default function UserMenu() {
               {({ active }) => (
                 <button
                   onClick={handleLogout}
-                  className={`${
-                    active ? 'bg-gray-100 dark:bg-dark-300' : ''
-                  } block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300`}
+                  className={`${active ? 'bg-gray-100 dark:bg-dark-300' : ''
+                    } block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300`}
                 >
                   Sign out
                 </button>

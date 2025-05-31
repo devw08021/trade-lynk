@@ -17,7 +17,7 @@ interface RegisterRequest {
 interface AuthResponse {
   user: User;
   token: string;
-  result:object;
+  result: object;
   success: boolean;
 }
 
@@ -166,6 +166,21 @@ export const userApi = createApi({
         body: data,
       }),
     }),
+
+
+
+    //userSetting
+    getCurrentUserSetting: builder.query<any, void>({
+      query: () => `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/userSetting`,
+      providesTags: ['User'],
+    }),
+    updateUserSetting: builder.mutation<{ success: boolean }, any>({
+      query: (data) => ({
+        url: `${process.env.NEXT_PUBLIC_USER_API_URL}/api/user/userSetting`,
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -182,4 +197,6 @@ export const {
   useGetKycStatusQuery,
   useGetNonceQuery,
   useVerifyWalletSignatureMutation,
+  useGetCurrentUserSettingQuery,
+  useUpdateUserSettingMutation,
 } = userApi; 

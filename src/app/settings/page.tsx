@@ -32,8 +32,15 @@ export default function SettingsPage() {
   const { success, error } = useToastContext();
   const [activeTab, setActiveTab] = useState('general');
 
-  const { theme, language, timezone, currency,
-    siteNotifications, emailNotifications } = useAppSelector((state) => state.auth.userSetting);
+  const userSetting = useAppSelector((state) => state.auth.userSetting);
+  let emailNotifications = userSetting?.emailNotifications || "";
+  let siteNotifications = userSetting?.siteNotifications || "";
+  let theme = userSetting?.theme || "";
+  let language = userSetting?.language || "";
+  let timezone = userSetting?.timezone || "";
+  let currency = userSetting?.currency || "";
+  let tradingView = userSetting?.tradingView || "";
+
 
   const [updateUserSetting, { isLoading }] = useUpdateUserSettingMutation();
 
@@ -60,7 +67,7 @@ export default function SettingsPage() {
         // TODO: Implement API call
         console.log('Saving settings:', data);
       } catch (err) {
-        error('Failed to update settings');
+        console.error('Failed to update settings');
       }
     },
   });

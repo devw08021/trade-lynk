@@ -24,8 +24,8 @@ export default function PageTracker() {
             const { result } = await getCurrentUser().unwrap();
             dispatch(updateUserProfile(result));
 
-        } catch (error: any) {
-            console.error("🚀 ~ getUserDetails ~ error:", error)
+        } catch (err: any) {
+            console.error("🚀 ~ getUserDetails ~ error:", err)
 
         }
     };
@@ -39,8 +39,8 @@ export default function PageTracker() {
             }
             console.log("🚀 ~ getUserSettings ~ result?.theme:", result?.theme, mode)
 
-        } catch (error: any) {
-            console.error("🚀 ~ getUserDetails ~ error:", error)
+        } catch (err: any) {
+            console.error("🚀 ~ getUserDetails ~ error:", err)
 
         }
     }

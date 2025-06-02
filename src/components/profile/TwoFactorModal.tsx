@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -18,37 +17,38 @@ import { useGetTwoFactorMutation, useEnableTwoFactorMutation, useDisableTwoFacto
 interface SetupData {
   qrCode: string;
   secret: string;
+  qrCodeUrl?: string;
 }
 
 interface FormErrors {
   code?: string;
   password?: string;
 }
+
 interface FormState {
   code: string;
+  password: string;
   step: 1 | 2 | 3;
   loading: boolean;
   copied: boolean;
-  showCurrent: false,
+  showCurrent: boolean;
+  error?: string;
 }
 
 export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { success, error: toastError } = useToastContext();
   const dispatch = useAppDispatch();
 
-
-
   const [twoFactor, { isLoading: isTwoFactorLoading }] = useGetTwoFactorMutation();
   const [enableTwoFactor, { isLoading: isEnableLoading }] = useEnableTwoFactorMutation();
   const [disableTwoFactor, { isLoading: isDisableLoading }] = useDisableTwoFactorMutation();
   const { isLoading, refetch: getCurrentUser } = useGetCurrentUserQuery();
 
-
   const { isTwoFactorEnabled } = useAppSelector(s => s.auth.user);
-  console.log("🚀 ~ TwoFactorModal ~ isTwoFactorEnabled:", isTwoFactorEnabled)
 
   const [form, setForm] = useState<FormState>({
     code: '',
+    password: '',
     step: isTwoFactorEnabled ? 2 : 1,
     loading: false,
     error: undefined,
@@ -58,7 +58,6 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
   const [setupData, setSetupData] = useState<SetupData | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof FormErrors | 'form', string>>>({});
 
-
   // Fetch QR & secret when modal opens for setup
   useEffect(() => {
     if (isOpen && !isTwoFactorEnabled) {
@@ -66,7 +65,6 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
       twoFactor()
         .unwrap()
         .then(data => {
-          console.log('2FA setup data:', data);
           setSetupData(data?.result || null);
           setForm(f => ({ ...f, loading: false }));
         })
@@ -74,17 +72,17 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
           toastError('Failed to fetch 2FA setup data');
           setForm(f => ({ ...f, loading: false, error: 'Failed to fetch setup data' }));
         });
-
     } else if (isTwoFactorEnabled) {
       setForm(f => ({ ...f, step: 2, loading: false, code: '', password: "" }));
     }
-  }, [isOpen]);
+  }, [isOpen, isTwoFactorEnabled, twoFactor, toastError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: undefined, form: undefined }));
   };
+
   const handleCopy = () => {
     if (setupData) {
       navigator.clipboard.writeText(setupData.secret);
@@ -95,8 +93,6 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
   };
 
   const handleNext = async () => {
-
-
     setForm(f => ({ ...f, loading: true }));
     let data = {
       code: form.code,
@@ -112,7 +108,6 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
           getUserDetails();
           setSetupData(null);
         }
-
         setForm(f => ({ ...f, step: 3, loading: false, code: '', password: '' }));
       } else if (form.step === 2) {
         const { success: apiStatus, result, message } = await disableTwoFactor(data).unwrap();
@@ -126,13 +121,12 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
       } else {
         setForm(f => ({ ...f, error: 'Invalid code' }));
       }
-
     } catch (err) {
       console.error('Error during 2FA operation:', err);
       if (err && (err as any).data?.errors || {}) {
         setErrors({ ... (err as any).data?.errors?.fields || {} });
       } else {
-        setErrors({ form: 'Failed to update password. Please try again.' });
+        setErrors({ form: 'Operation failed. Please try again.' });
       }
     } finally {
       setForm(f => ({ ...f, loading: false }));
@@ -143,12 +137,11 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
     try {
       const { result } = await getCurrentUser().unwrap();
       dispatch(updateUserProfile(result));
-
     } catch (error) {
-      console.error("🚀 ~ getUserDetails ~ error:", error)
-
+      console.error("Error fetching user details:", error)
     }
   };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -156,103 +149,73 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
       title={isTwoFactorEnabled ? 'Disable Two-Factor Authentication' : 'Set Up Two-Factor Authentication'}
       size="md"
     >
+      {/* Setup Step */}
       {form.step === 1 && setupData && (
-        <>
-          <div className="bg-gray-50 dark:bg-dark-200 p-4 rounded-lg space-y-4">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              Scan this QR or copy the code below into your authenticator app.
-            </p>
-            <div className="flex justify-center">
-              {/* <img src={setupData.qrCodeUrl} alt="2FA QR" className="w-48 h-48" /> */}
-              <QRCodeComponent
-                value={setupData.qrCodeUrl}
-                size={256}
-                level="M"
-                includeMargin={true}
-                bgColor="#FFFFFF"
-                fgColor="#000000"
-              />
+        <div className="space-y-6">
+          {/* General Error */}
+          {errors.form && (
+            <div className="alert-error">
+              <p className="text-sm">{errors.form}</p>
             </div>
-            <div className="flex items-center">
-              <code className="flex-1 bg-gray-100 dark:bg-dark-100 px-2 py-1 rounded font-mono text-sm break-all">
+          )}
+
+          {/* QR Code Section */}
+          <div className="card-dark space-y-4">
+            <p className="text-sm text-gradient-secondary">
+              Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.) or manually enter the secret key.
+            </p>
+            
+            <div className="flex-center">
+              <div className="bg-white p-4 rounded-lg">
+                <QRCodeComponent
+                  value={setupData.qrCodeUrl || setupData.secret}
+                  size={200}
+                  level="M"
+                  includeMargin={true}
+                  bgColor="#FFFFFF"
+                  fgColor="#000000"
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <div className="flex-1 bg-[#08090a] px-3 py-2 rounded font-mono text-sm text-brand break-all border border-[#2a2b2e]">
                 {setupData.secret}
-              </code>
-              <Button variant="outline" size="icon" onClick={() => handleCopy()} className="ml-2">
-                {form.copied ? <ShieldCheckIcon className="h-5 w-5 text-green-500" /> : <ClipboardIcon className="h-5 w-5" />}
-              </Button>
+              </div>
+              <button
+                onClick={handleCopy}
+                className="btn-outline p-2"
+                title="Copy to clipboard"
+              >
+                {form.copied ? 
+                  <ShieldCheckIcon className="h-5 w-5 text-success" /> : 
+                  <ClipboardIcon className="h-5 w-5" />
+                }
+              </button>
             </div>
           </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Enter 6-digit code
+
+          {/* Verification Code Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-white">
+              Enter 6-digit verification code
             </label>
             <input
               type="text"
               value={form.code}
-              autoComplete="password"
               name="code"
               onChange={handleChange}
-              className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10" placeholder="123456"
+              className={`form-input text-center text-lg tracking-widest ${errors.code ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
               placeholder="123456"
+              maxLength={6}
             />
-            {errors.code && <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.code}</p>}
+            {errors.code && <p className="text-error text-sm mt-1">{errors.code}</p>}
           </div>
-          {/* Current Password */}
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              CURRENT PASSWORD
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={form.showCurrent ? 'text' : 'password'}
-                autoComplete="password"
-                value={form.password}
-                onChange={handleChange}
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                onClick={() => setForm(f => ({ ...f, showCurrent: !f.showCurrent }))}
-              >
-                {form.showCurrent ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-              </button>
-            </div>
-            {errors.password && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
-          </div>
-          <div className="flex justify-end space-x-2 mt-6">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleNext} disabled={form.loading}>
-              {form.loading ? <LoadingSpinner size="sm" /> : 'Verify & Enable'}
-            </Button>
-          </div>
-        </>
-      )}
 
-      {form.step === 2 && (
-        <>
-          <div className="space-y-4">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              Enter the 6-digit code from your authenticator app.
-            </p>
-            <div className="relative">
-              <input
-                type="text"
-                value={form.code}
-                onChange={handleChange}
-                autoComplete='false'
-                name="code"
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10" placeholder="123456"
-              />
-              {errors.code && <p className="text-red-600 dark:text-red-400 text-sm">{errors.code}</p>}
-            </div>
-          </div>
           {/* Current Password */}
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              CURRENT PASSWORD
+            <label htmlFor="password" className="block text-sm font-medium text-white">
+              Current Password
             </label>
             <div className="relative">
               <input
@@ -262,45 +225,171 @@ export default function TwoFactorModal({ isOpen, onClose }: { isOpen: boolean; o
                 autoComplete="current-password"
                 value={form.password}
                 onChange={handleChange}
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10"
+                placeholder="Enter your current password"
+                className={`form-input pr-12 ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
                 onClick={() => setForm(f => ({ ...f, showCurrent: !f.showCurrent }))}
               >
                 {form.showCurrent ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
             </div>
-            {errors.password && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <Button variant="link" onClick={() => setForm(f => ({ ...f, code: '', error: undefined }))}>
-              <ArrowPathIcon className="h-5 w-5 mr-1" /> Retry
-            </Button>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={onClose}>Cancel</Button>
-              <Button onClick={handleNext} disabled={form.loading}>
-                {form.loading ? <LoadingSpinner size="sm" /> : 'Verify'}
-              </Button>
-            </div>
+            {errors.password && <p className="mt-2 text-sm text-error">{errors.password}</p>}
           </div>
 
-        </>
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 mt-8">
+            <button onClick={onClose} className="btn-outline" disabled={form.loading}>
+              Cancel
+            </button>
+            <button 
+              onClick={handleNext} 
+              disabled={form.loading || !form.code || !form.password}
+              className={`btn-primary ${(form.loading || !form.code || !form.password) ? 'btn-disabled' : ''}`}
+            >
+              {form.loading ? (
+                <div className="flex items-center">
+                  <div className="loading-spinner mr-2"></div>
+                  Enabling...
+                </div>
+              ) : (
+                'Verify & Enable'
+              )}
+            </button>
+          </div>
+        </div>
       )}
 
-      {form.step === 3 && (
-        <div className="text-center py-6">
-          <ShieldCheckIcon className="mx-auto h-12 w-12 text-green-600 dark:text-green-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Two-Factor Enabled!
-          </h3>
-          <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-            Your account is now protected. You’ll need a code when signing in.
-          </p>
-          <div className="mt-6">
-            <Button onClick={onClose}>Done</Button>
+      {/* Disable Step */}
+      {form.step === 2 && (
+        <div className="space-y-6">
+          {/* General Error */}
+          {errors.form && (
+            <div className="alert-error">
+              <p className="text-sm">{errors.form}</p>
+            </div>
+          )}
+
+          <div className="alert-warning">
+            <p className="text-sm">
+              <strong>Warning:</strong> Disabling two-factor authentication will make your account less secure. 
+              Enter your verification code and password to proceed.
+            </p>
           </div>
+
+          {/* Verification Code */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-white">
+              Enter 6-digit code from your authenticator app
+            </label>
+            <input
+              type="text"
+              value={form.code}
+              onChange={handleChange}
+              name="code"
+              className={`form-input text-center text-lg tracking-widest ${errors.code ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="123456"
+              maxLength={6}
+            />
+            {errors.code && <p className="text-error text-sm mt-1">{errors.code}</p>}
+          </div>
+
+          {/* Current Password */}
+          <div className="space-y-2">
+            <label htmlFor="password" className="block text-sm font-medium text-white">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={form.showCurrent ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter your current password"
+                className={`form-input pr-12 ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+                onClick={() => setForm(f => ({ ...f, showCurrent: !f.showCurrent }))}
+              >
+                {form.showCurrent ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+              </button>
+            </div>
+            {errors.password && <p className="mt-2 text-sm text-error">{errors.password}</p>}
+          </div>
+
+          <div className="flex justify-between items-center mt-8">
+            <button 
+              onClick={() => setForm(f => ({ ...f, code: '', error: undefined }))}
+              className="btn-ghost flex items-center"
+            >
+              <ArrowPathIcon className="h-4 w-4 mr-1" /> 
+              Clear Code
+            </button>
+            <div className="flex space-x-3">
+              <button onClick={onClose} className="btn-outline" disabled={form.loading}>
+                Cancel
+              </button>
+              <button 
+                onClick={handleNext} 
+                disabled={form.loading || !form.code || !form.password}
+                className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium transition-colors ${(form.loading || !form.code || !form.password) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {form.loading ? (
+                  <div className="flex items-center">
+                    <div className="loading-spinner mr-2"></div>
+                    Disabling...
+                  </div>
+                ) : (
+                  'Disable 2FA'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Step */}
+      {form.step === 3 && (
+        <div className="text-center py-8">
+          <div className="flex-center mb-6">
+            <div className="icon-container">
+              <ShieldCheckIcon className="h-8 w-8 text-black" />
+            </div>
+          </div>
+          <h3 className="heading-tertiary text-gradient-muted mb-3">
+            Two-Factor Authentication Enabled!
+          </h3>
+          <p className="text-gradient-secondary mb-6">
+            Your account is now protected with an additional layer of security. You'll need to enter a verification code from your authenticator app each time you sign in.
+          </p>
+          
+          <div className="card-dark mb-6">
+            <h4 className="font-medium text-brand mb-3">Important Security Tips:</h4>
+            <ul className="text-sm text-gradient-secondary space-y-2 text-left">
+              <li className="flex items-start">
+                <div className="w-2 h-2 bg-brand rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <span>Save your backup codes in a secure location</span>
+              </li>
+              <li className="flex items-start">
+                <div className="w-2 h-2 bg-brand rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <span>Keep your authenticator app updated</span>
+              </li>
+              <li className="flex items-start">
+                <div className="w-2 h-2 bg-brand rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <span>Don't share your verification codes with anyone</span>
+              </li>
+            </ul>
+          </div>
+          
+          <button onClick={onClose} className="btn-primary-large">
+            Complete Setup
+          </button>
         </div>
       )}
     </Modal>

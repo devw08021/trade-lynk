@@ -6,39 +6,35 @@ import Image from 'next/image';
 import { ArrowRightIcon, ChartBarIcon, CurrencyDollarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
-  console.log("process.envprocess.env",process.env.NEXT_PUBLIC_USER_API_URL)
   return (
-    <>
+    <main className="page-wrapper">
       {/* Hero Section */}
-      <section className="relative bg-gradient-radial from-primary-900 to-dark-400 text-white py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="hero-background flex-center section-padding relative z-10">
+        <div className="container-custom">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-                Next Generation <br />
-                <span className="text-primary-300">Crypto Trading</span> Platform
+              <div className="mb-6">
+                <span className="text-xs font-medium tracking-[0.3em] text-brand uppercase opacity-90">LEADING CRYPTO PLATFORM SINCE 2018</span>
+              </div>
+              <h1 className="heading-primary text-gradient max-w-4xl">
+                Your <span className="text-gradient-primary">reliable</span> partner<br />
+                to crypto trading
               </h1>
-              <p className="text-lg md:text-xl mb-8 text-gray-200 max-w-xl">
+              <p className="text-lg font-light max-w-2xl mb-8 leading-relaxed text-gradient-secondary">
                 Trade cryptocurrencies with advanced tools, low fees, and seamless experience across spot, perpetual, and P2P markets.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/auth/register"
-                  className="btn-primary text-base px-8 py-3"
-                >
+                <Link href="/auth/register" className="btn-primary-large">
                   Get Started
                 </Link>
-                <Link
-                  href="/markets"
-                  className="text-base px-8 py-3 border border-primary-400 rounded hover:bg-primary-800/30 transition-colors"
-                >
+                <Link href="/markets" className="btn-secondary">
                   View Markets
                 </Link>
               </div>
             </div>
             <div className="md:w-1/2 relative">
               <div className="w-full h-[400px] relative">
-                <div className="absolute inset-0 bg-gradient-radial from-primary-500/20 to-transparent rounded-full blur-3xl"></div>
+                <div className="absolute inset-0 bg-[#bfff00] opacity-10 rounded-full blur-[100px]"></div>
                 <Image
                   src="/images/dashboard.png"
                   alt="Trading Dashboard"
@@ -53,72 +49,63 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white dark:bg-dark-400">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="section-padding">
+        <div className="container-custom">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+            <h2 className="heading-secondary text-gradient-muted mb-4">
               Complete Trading Ecosystem
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg font-light max-w-3xl mx-auto text-gradient-secondary">
               Everything you need to trade cryptocurrencies in one platform
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid-responsive">
             {/* Spot Trading */}
-            <div className="card hover:shadow-lg transition-shadow">
+            <div className="card-hover">
               <div className="flex items-center mb-4">
-                <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-full">
-                  <CurrencyDollarIcon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                <div className="icon-container">
+                  <CurrencyDollarIcon className="icon-primary" />
                 </div>
-                <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">Spot Trading</h3>
+                <h3 className="text-xl font-light ml-4 text-white">Spot Trading</h3>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-gradient-secondary mb-6">
                 Buy and sell cryptocurrencies directly with advanced order types, charts, and market analysis tools.
               </p>
-              <Link
-                href="/spot"
-                className="flex items-center text-primary-600 dark:text-primary-400 font-medium"
-              >
-                Start Trading <ArrowRightIcon className="ml-2 h-4 w-4" />
+              <Link href="/spot" className="btn-ghost flex items-center">
+                Start Trading <ArrowRightIcon className="ml-2 icon-small" />
               </Link>
             </div>
 
             {/* Perpetual Trading */}
-            <div className="card hover:shadow-lg transition-shadow">
+            <div className="card-hover">
               <div className="flex items-center mb-4">
-                <div className="p-3 bg-secondary-100 dark:bg-secondary-900 rounded-full">
-                  <ChartBarIcon className="h-8 w-8 text-secondary-600 dark:text-secondary-400" />
+                <div className="icon-container">
+                  <ChartBarIcon className="icon-primary" />
                 </div>
-                <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">Perpetual Trading</h3>
+                <h3 className="text-xl font-light ml-4 text-white">Perpetual Trading</h3>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-gradient-secondary mb-6">
                 Trade with leverage on perpetual contracts with no expiry date, advanced risk management, and cross-margin.
               </p>
-              <Link
-                href="/perpetual"
-                className="flex items-center text-secondary-600 dark:text-secondary-400 font-medium"
-              >
-                Start Trading <ArrowRightIcon className="ml-2 h-4 w-4" />
+              <Link href="/perpetual" className="btn-ghost flex items-center">
+                Start Trading <ArrowRightIcon className="ml-2 icon-small" />
               </Link>
             </div>
 
             {/* P2P Trading */}
-            <div className="card hover:shadow-lg transition-shadow">
+            <div className="card-hover">
               <div className="flex items-center mb-4">
-                <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full">
-                  <ShieldCheckIcon className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+                <div className="icon-container">
+                  <ShieldCheckIcon className="icon-primary" />
                 </div>
-                <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">P2P Trading</h3>
+                <h3 className="text-xl font-light ml-4 text-white">P2P Trading</h3>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-gradient-secondary mb-6">
                 Buy and sell cryptocurrencies directly with other users using your preferred payment methods with escrow protection.
               </p>
-              <Link
-                href="/p2p"
-                className="flex items-center text-gray-600 dark:text-gray-400 font-medium"
-              >
-                Start Trading <ArrowRightIcon className="ml-2 h-4 w-4" />
+              <Link href="/p2p" className="btn-ghost flex items-center">
+                Start Trading <ArrowRightIcon className="ml-2 icon-small" />
               </Link>
             </div>
           </div>
@@ -126,43 +113,29 @@ export default function Home() {
       </section>
 
       {/* Market Overview */}
-      <section className="py-16 bg-gray-50 dark:bg-dark-300">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 md:mb-0">
+      <section className="section-padding section-background">
+        <div className="container-custom">
+          <div className="flex-between mb-8 mobile-flex gap-4">
+            <h2 className="heading-tertiary text-gradient-muted">
               Market Overview
             </h2>
-            <Link
-              href="/markets"
-              className="text-primary-600 dark:text-primary-400 font-medium flex items-center"
-            >
-              View All Markets <ArrowRightIcon className="ml-2 h-4 w-4" />
+            <Link href="/markets" className="btn-ghost flex items-center">
+              View All Markets <ArrowRightIcon className="ml-2 icon-small" />
             </Link>
           </div>
           
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-dark-200 rounded-lg overflow-hidden">
-              <thead className="bg-gray-50 dark:bg-dark-300">
+          <div className="table-container">
+            <table className="table-main">
+              <thead className="table-header">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Asset
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    24h Change
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    24h Volume
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Action
-                  </th>
+                  <th className="table-header-cell">Asset</th>
+                  <th className="table-header-cell">Price</th>
+                  <th className="table-header-cell">24h Change</th>
+                  <th className="table-header-cell">24h Volume</th>
+                  <th className="table-header-cell">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-dark-100">
-                {/* Sample data - in a real app this would come from an API */}
+              <tbody className="table-body">
                 <MarketRow 
                   asset="BTC/USDT" 
                   price="56,789.23" 
@@ -205,31 +178,25 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary-600 dark:bg-primary-800 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+      <section className="section-padding glow-background">
+        <div className="container-custom text-center">
+          <h2 className="heading-secondary text-gradient-muted mb-6">
             Start Trading Today
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-lg mb-8 max-w-2xl mx-auto font-light text-gradient-secondary">
             Join thousands of traders and investors on our platform. Sign up in minutes and start trading immediately.
           </p>
-          <div className="flex justify-center gap-4">
-            <Link
-              href="/auth/register"
-              className="bg-white text-primary-600 hover:bg-gray-100 px-8 py-3 rounded-md font-medium"
-            >
+          <div className="flex justify-center gap-4 flex-wrap">
+            <Link href="/auth/register" className="btn-primary-large">
               Create Account
             </Link>
-            <Link
-              href="/markets"
-              className="border border-white hover:bg-primary-700 px-8 py-3 rounded-md font-medium"
-            >
+            <Link href="/markets" className="btn-secondary">
               View Markets
             </Link>
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }
 
@@ -241,27 +208,24 @@ function MarketRow({ asset, price, change, volume, isPositive }: {
   isPositive: boolean;
 }) {
   return (
-    <tr className="hover:bg-gray-50 dark:hover:bg-dark-300">
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+    <tr className="table-row">
+      <td className="table-cell font-medium text-white">
         {asset}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+      <td className="table-cell text-white">
         ${price}
       </td>
-      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+      <td className={`table-cell font-medium ${isPositive ? 'status-positive' : 'status-negative'}`}>
         {change}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+      <td className="table-cell status-neutral">
         ${volume}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm">
-        <Link
-          href={`/spot?symbol=${asset}`}
-          className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
-        >
+      <td className="table-cell">
+        <Link href={`/spot?symbol=${asset}`} className="btn-ghost">
           Trade
         </Link>
       </td>
     </tr>
   );
-} 
+}

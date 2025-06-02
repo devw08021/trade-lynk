@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ConfirmationModal } from '@/components/ui';
 import { TradeConfirmationModal } from '@/components/trading';
+// import { TrendingUpIcon, TrendingDownIcon } from '@heroicons/react/24/outline';
 
 export default function TradingPage() {
   const [activeTab, setActiveTab] = useState('spot');
@@ -63,6 +64,18 @@ export default function TradingPage() {
     }
   };
   
+  const handlePercentageClick = (percentage: number) => {
+    // Mock balance for calculation
+    const mockBalance = 1000;
+    const calculatedTotal = mockBalance * percentage;
+    setTotal(calculatedTotal.toFixed(2));
+    
+    if (price && parseFloat(price) > 0) {
+      const calculatedAmount = calculatedTotal / parseFloat(price);
+      setAmount(calculatedAmount.toFixed(8));
+    }
+  };
+  
   const showTradeModal = () => {
     const calculatedFee = parseFloat(total) * 0.001;
     
@@ -82,176 +95,209 @@ export default function TradingPage() {
   };
   
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Trading</h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white dark:bg-dark-300 p-6 rounded-lg shadow">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-xl">BTC/USDT</span>
-              <span className="text-green-600 dark:text-green-400">$39,245.30</span>
-              <span className="text-green-600 dark:text-green-400 text-sm">+2.4%</span>
-            </div>
-            <div className="space-x-2">
-              <button className="bg-gray-200 dark:bg-dark-200 px-3 py-1 rounded-md text-sm">1D</button>
-              <button className="bg-gray-200 dark:bg-dark-200 px-3 py-1 rounded-md text-sm">1W</button>
-              <button className="bg-gray-200 dark:bg-dark-200 px-3 py-1 rounded-md text-sm">1M</button>
-            </div>
-          </div>
-          
-          <div className="w-full h-64 bg-gray-100 dark:bg-dark-200 rounded-md flex items-center justify-center text-gray-500 dark:text-gray-400">
-            Chart Placeholder
-          </div>
+    <div className="page-wrapper">
+      <div className="container-custom section-padding">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="heading-secondary text-gradient-muted mb-2">Advanced Trading</h1>
+          <p className="text-gradient-secondary">Professional trading interface for your funded account</p>
         </div>
         
-        <div className="bg-white dark:bg-dark-300 p-6 rounded-lg shadow">
-          <div className="flex mb-6">
-            <button
-              className={`flex-1 py-2 text-center ${
-                tradeType === 'buy' 
-                  ? 'bg-green-600 text-white' 
-                  : 'bg-gray-100 dark:bg-dark-200 text-gray-800 dark:text-gray-200'
-              }`}
-              onClick={() => setTradeType('buy')}
-            >
-              Buy
-            </button>
-            <button
-              className={`flex-1 py-2 text-center ${
-                tradeType === 'sell' 
-                  ? 'bg-red-600 text-white' 
-                  : 'bg-gray-100 dark:bg-dark-200 text-gray-800 dark:text-gray-200'
-              }`}
-              onClick={() => setTradeType('sell')}
-            >
-              Sell
-            </button>
-          </div>
-          
-          <div className="flex space-x-2 mb-6">
-            <button
-              className={`px-3 py-1 text-sm rounded-md ${
-                orderType === 'limit' 
-                  ? 'bg-primary-600 text-white' 
-                  : 'bg-gray-100 dark:bg-dark-200 text-gray-800 dark:text-gray-200'
-              }`}
-              onClick={() => setOrderType('limit')}
-            >
-              Limit
-            </button>
-            <button
-              className={`px-3 py-1 text-sm rounded-md ${
-                orderType === 'market' 
-                  ? 'bg-primary-600 text-white' 
-                  : 'bg-gray-100 dark:bg-dark-200 text-gray-800 dark:text-gray-200'
-              }`}
-              onClick={() => setOrderType('market')}
-            >
-              Market
-            </button>
-            <button
-              className={`px-3 py-1 text-sm rounded-md ${
-                orderType === 'stop' 
-                  ? 'bg-primary-600 text-white' 
-                  : 'bg-gray-100 dark:bg-dark-200 text-gray-800 dark:text-gray-200'
-              }`}
-              onClick={() => setOrderType('stop')}
-            >
-              Stop
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Price (USDT)
-              </label>
-              <input
-                type="text"
-                value={price}
-                onChange={handlePriceChange}
-                disabled={orderType === 'market'}
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Amount (BTC)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={amount}
-                  onChange={handleAmountChange}
-                  className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <div className="flex space-x-1">
-                    <button 
-                      className="text-xs text-primary-600 dark:text-primary-400"
-                      onClick={() => {
-                        const value = 0.25 * parseFloat(total) / parseFloat(price);
-                        setAmount(value.toFixed(8));
-                        setTotal((0.25 * parseFloat(total)).toFixed(2));
-                      }}
-                    >
-                      25%
-                    </button>
-                    <button 
-                      className="text-xs text-primary-600 dark:text-primary-400"
-                      onClick={() => {
-                        const value = 0.50 * parseFloat(total) / parseFloat(price);
-                        setAmount(value.toFixed(8));
-                        setTotal((0.50 * parseFloat(total)).toFixed(2));
-                      }}
-                    >
-                      50%
-                    </button>
-                    <button 
-                      className="text-xs text-primary-600 dark:text-primary-400"
-                      onClick={() => {
-                        const value = 0.75 * parseFloat(total) / parseFloat(price);
-                        setAmount(value.toFixed(8));
-                        setTotal((0.75 * parseFloat(total)).toFixed(2));
-                      }}
-                    >
-                      75%
-                    </button>
-                    <button 
-                      className="text-xs text-primary-600 dark:text-primary-400"
-                      onClick={() => {
-                        const value = 1.0 * parseFloat(total) / parseFloat(price);
-                        setAmount(value.toFixed(8));
-                        setTotal((1.0 * parseFloat(total)).toFixed(2));
-                      }}
-                    >
-                      100%
-                    </button>
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Chart Section */}
+          <div className="lg:col-span-2 card">
+            <div className="flex-between mb-6">
+              <div className="flex items-center space-x-4">
+                <span className="text-2xl font-light text-white">BTC/USDT</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl font-medium text-white">$39,245.30</span>
+                  <span className="badge badge-success flex items-center">
+                    {/* <TrendingUpIcon className="h-3 w-3 mr-1" /> */}
+                    +2.4%
+                  </span>
                 </div>
+              </div>
+              <div className="flex space-x-2">
+                <button className="btn-outline text-xs px-3 py-1">1D</button>
+                <button className="btn-outline text-xs px-3 py-1">1W</button>
+                <button className="btn-outline text-xs px-3 py-1">1M</button>
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Total (USDT)
-              </label>
-              <input
-                type="text"
-                value={total}
-                onChange={handleTotalChange}
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm"
-              />
+            <div className="w-full h-80 bg-[#08090a] rounded-lg flex-center border border-[#2a2b2e]">
+              <div className="text-center">
+                <div className="text-brand text-4xl mb-2">📈</div>
+                <p className="text-gradient-secondary">Advanced TradingView Chart</p>
+                <p className="text-xs text-gradient-secondary mt-1">Real-time price data and technical indicators</p>
+              </div>
+            </div>
+
+            {/* Market Statistics */}
+            <div className="grid grid-cols-4 gap-4 mt-6">
+              <div className="text-center">
+                <div className="text-xs text-gradient-secondary mb-1">24h High</div>
+                <div className="text-sm font-medium text-white">$39,890.50</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gradient-secondary mb-1">24h Low</div>
+                <div className="text-sm font-medium text-white">$38,125.75</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gradient-secondary mb-1">24h Volume</div>
+                <div className="text-sm font-medium text-white">1,245.67 BTC</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gradient-secondary mb-1">Market Cap</div>
+                <div className="text-sm font-medium text-white">$768.5B</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Trading Panel */}
+          <div className="card">
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-white mb-4">Place Order</h3>
+              
+              {/* Buy/Sell Toggle */}
+              <div className="flex mb-6 bg-[#0f1012] rounded-lg p-1">
+                <button
+                  className={`flex-1 py-2 text-center rounded-md font-medium transition-colors ${
+                    tradeType === 'buy' 
+                      ? 'bg-green-600 text-white' 
+                      : 'text-gradient-secondary hover:text-white'
+                  }`}
+                  onClick={() => setTradeType('buy')}
+                >
+                  Buy
+                </button>
+                <button
+                  className={`flex-1 py-2 text-center rounded-md font-medium transition-colors ${
+                    tradeType === 'sell' 
+                      ? 'bg-red-600 text-white' 
+                      : 'text-gradient-secondary hover:text-white'
+                  }`}
+                  onClick={() => setTradeType('sell')}
+                >
+                  Sell
+                </button>
+              </div>
+              
+              {/* Order Type Selection */}
+              <div className="flex space-x-2 mb-6">
+                <button
+                  className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${
+                    orderType === 'limit' 
+                      ? 'bg-brand text-black' 
+                      : 'bg-[#2a2b2e] text-gradient-secondary hover:text-white'
+                  }`}
+                  onClick={() => setOrderType('limit')}
+                >
+                  Limit
+                </button>
+                <button
+                  className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${
+                    orderType === 'market' 
+                      ? 'bg-brand text-black' 
+                      : 'bg-[#2a2b2e] text-gradient-secondary hover:text-white'
+                  }`}
+                  onClick={() => setOrderType('market')}
+                >
+                  Market
+                </button>
+                <button
+                  className={`px-4 py-2 text-sm rounded-md font-medium transition-colors ${
+                    orderType === 'stop' 
+                      ? 'bg-brand text-black' 
+                      : 'bg-[#2a2b2e] text-gradient-secondary hover:text-white'
+                  }`}
+                  onClick={() => setOrderType('stop')}
+                >
+                  Stop
+                </button>
+              </div>
             </div>
             
-            <div className="pt-4">
+            <div className="space-y-4">
+              {/* Price Input */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Price (USDT)
+                </label>
+                <input
+                  type="text"
+                  value={price}
+                  onChange={handlePriceChange}
+                  disabled={orderType === 'market'}
+                  className={`form-input ${orderType === 'market' ? 'opacity-50' : ''}`}
+                  placeholder="Enter price"
+                />
+              </div>
+              
+              {/* Amount Input */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Amount (BTC)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    className="form-input pr-32"
+                    placeholder="0.00000000"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <div className="flex space-x-1">
+                      {[0.25, 0.5, 0.75, 1.0].map((percentage) => (
+                        <button 
+                          key={percentage}
+                          className="text-xs text-brand hover:text-[#a6e600] transition-colors"
+                          onClick={() => handlePercentageClick(percentage)}
+                        >
+                          {Math.round(percentage * 100)}%
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Total Input */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Total (USDT)
+                </label>
+                <input
+                  type="text"
+                  value={total}
+                  onChange={handleTotalChange}
+                  className="form-input"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Order Summary */}
+              <div className="card-dark space-y-2">
+                <div className="flex-between text-sm">
+                  <span className="text-gradient-secondary">Available Balance:</span>
+                  <span className="text-white">1,000.00 USDT</span>
+                </div>
+                <div className="flex-between text-sm">
+                  <span className="text-gradient-secondary">Trading Fee (0.1%):</span>
+                  <span className="text-white">${(parseFloat(total) * 0.001).toFixed(2)}</span>
+                </div>
+                <div className="flex-between text-sm font-medium border-t border-[#2a2b2e] pt-2">
+                  <span className="text-white">Total Cost:</span>
+                  <span className="text-brand">${(parseFloat(total) + parseFloat(total) * 0.001).toFixed(2)}</span>
+                </div>
+              </div>
+              
+              {/* Submit Button */}
               <button
                 type="button"
                 onClick={showTradeModal}
                 disabled={!amount || parseFloat(amount) <= 0}
-                className={`w-full py-3 px-4 rounded-md text-white font-medium ${
+                className={`w-full py-3 px-4 rounded-md text-white font-medium transition-colors ${
                   tradeType === 'buy'
                     ? 'bg-green-600 hover:bg-green-700'
                     : 'bg-red-600 hover:bg-red-700'
@@ -262,91 +308,179 @@ export default function TradingPage() {
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="mt-8 bg-white dark:bg-dark-300 p-6 rounded-lg shadow">
-        <h2 className="text-lg font-medium mb-4">Open Orders</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-100">
-            <thead className="bg-gray-50 dark:bg-dark-200">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pair</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Side</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Filled</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-dark-300 divide-y divide-gray-200 dark:divide-dark-100">
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">2023-06-12 14:23</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">BTC/USDT</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Limit</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">Buy</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">38,500.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">0.05</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">0%</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">1,925.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button 
-                    onClick={() => setDeleteOrderModal({ isOpen: true, orderId: '12345' })}
-                    className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                  >
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">2023-06-11 09:45</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">ETH/USDT</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Limit</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 dark:text-red-400">Sell</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">2,400.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">1.5</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">0%</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">3,600.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button 
-                    onClick={() => setDeleteOrderModal({ isOpen: true, orderId: '12346' })}
-                    className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                  >
-                    Cancel
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        
+        {/* Open Orders Section */}
+        <div className="mt-8 card">
+          <div className="flex-between mb-6">
+            <h2 className="text-lg font-medium text-white">Open Orders</h2>
+            <span className="badge badge-primary text-xs">2 Active</span>
+          </div>
+          
+          <div className="table-container">
+            <table className="table-main">
+              <thead className="table-header">
+                <tr>
+                  <th className="table-header-cell">Time</th>
+                  <th className="table-header-cell">Pair</th>
+                  <th className="table-header-cell">Type</th>
+                  <th className="table-header-cell">Side</th>
+                  <th className="table-header-cell">Price</th>
+                  <th className="table-header-cell">Amount</th>
+                  <th className="table-header-cell">Filled</th>
+                  <th className="table-header-cell">Total</th>
+                  <th className="table-header-cell text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="table-body">
+                <tr className="table-row">
+                  <td className="table-cell status-neutral">2023-06-12 14:23</td>
+                  <td className="table-cell font-medium text-white">BTC/USDT</td>
+                  <td className="table-cell status-neutral">
+                    <span className="badge badge-primary text-xs">Limit</span>
+                  </td>
+                  <td className="table-cell">
+                    <span className="badge badge-success text-xs">Buy</span>
+                  </td>
+                  <td className="table-cell text-white">$38,500.00</td>
+                  <td className="table-cell text-white">0.05000000</td>
+                  <td className="table-cell status-neutral">0%</td>
+                  <td className="table-cell text-white">$1,925.00</td>
+                  <td className="table-cell text-right">
+                    <button 
+                      onClick={() => setDeleteOrderModal({ isOpen: true, orderId: '12345' })}
+                      className="text-error hover:text-red-300 font-medium transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+                <tr className="table-row">
+                  <td className="table-cell status-neutral">2023-06-11 09:45</td>
+                  <td className="table-cell font-medium text-white">ETH/USDT</td>
+                  <td className="table-cell status-neutral">
+                    <span className="badge badge-primary text-xs">Limit</span>
+                  </td>
+                  <td className="table-cell">
+                    <span className="badge badge-error text-xs">Sell</span>
+                  </td>
+                  <td className="table-cell text-white">$2,400.00</td>
+                  <td className="table-cell text-white">1.50000000</td>
+                  <td className="table-cell status-neutral">0%</td>
+                  <td className="table-cell text-white">$3,600.00</td>
+                  <td className="table-cell text-right">
+                    <button 
+                      onClick={() => setDeleteOrderModal({ isOpen: true, orderId: '12346' })}
+                      className="text-error hover:text-red-300 font-medium transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Empty State when no orders */}
+          {/* <div className="text-center py-12">
+            <div className="text-gradient-secondary mb-4">
+              <TrendingUpIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>No open orders</p>
+              <p className="text-sm">Your active orders will appear here</p>
+            </div>
+          </div> */}
         </div>
+
+        {/* Account Summary */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="card text-center">
+            <div className="text-lg font-light text-gradient-primary mb-2">$10,245.67</div>
+            <div className="text-sm text-gradient-secondary">Account Balance</div>
+            <div className="text-xs text-success mt-1">+2.45% Today</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-lg font-light text-gradient-primary mb-2">$1,925.00</div>
+            <div className="text-sm text-gradient-secondary">Open Orders</div>
+            <div className="text-xs text-gradient-secondary mt-1">2 Active Orders</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-lg font-light text-gradient-primary mb-2">$125.30</div>
+            <div className="text-sm text-gradient-secondary">Today's P&L</div>
+            <div className="text-xs text-success mt-1">+1.25%</div>
+          </div>
+        </div>
+
+        {/* Trading Tips */}
+        <div className="mt-8 card">
+          <h3 className="text-lg font-medium text-white mb-4">Trading Tips</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">Risk Management</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Never risk more than 2% of your account balance on a single trade. Use stop-loss orders to limit downside risk.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">Market Analysis</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Combine technical and fundamental analysis. Check volume, support/resistance levels, and market news.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">Order Types</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Use limit orders for better price control and market orders for immediate execution during volatile periods.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">Account Rules</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Follow your funded account rules: maximum daily loss, profit targets, and position sizing requirements.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Modals */}
+        <TradeConfirmationModal
+          isOpen={tradeModal.isOpen}
+          onClose={() => setTradeModal(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={confirmTrade}
+          tradeType={tradeModal.tradeType}
+          coinPair={tradeModal.coinPair}
+          amount={tradeModal.amount}
+          price={tradeModal.price}
+          total={tradeModal.total}
+          fee={tradeModal.fee}
+        />
+        
+        <ConfirmationModal
+          isOpen={deleteOrderModal.isOpen}
+          onClose={() => setDeleteOrderModal(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={() => {  
+            setDeleteOrderModal(prev => ({ ...prev, isOpen: false }));
+          }}
+          title="Cancel Order"
+          message="Are you sure you want to cancel this order? This action cannot be undone."
+          confirmText="Cancel Order"
+          cancelText="Keep Order"
+          type="danger"
+        />
       </div>
-      
-      <TradeConfirmationModal
-        isOpen={tradeModal.isOpen}
-        onClose={() => setTradeModal(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={confirmTrade}
-        tradeType={tradeModal.tradeType}
-        coinPair={tradeModal.coinPair}
-        amount={tradeModal.amount}
-        price={tradeModal.price}
-        total={tradeModal.total}
-        fee={tradeModal.fee}
-      />
-      
-      <ConfirmationModal
-        isOpen={deleteOrderModal.isOpen}
-        onClose={() => setDeleteOrderModal(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={() => {  
-          setDeleteOrderModal(prev => ({ ...prev, isOpen: false }));
-        }}
-        title="Cancel Order"
-        message={`Are you sure you want to cancel this order? This action cannot be undone.`}
-        confirmText="Cancel Order"
-        cancelText="Keep Order"
-        type="danger"
-      />
     </div>
   );
-} 
+}

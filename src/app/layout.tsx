@@ -7,11 +7,12 @@ import Footer from '@/components/layout/Footer';
 import { ToastProvider } from '@/components/ui/ToastContext';
 import ToastContainer from '@/components/ui/ToastContainer';
 import PageTracker from '@/components/layout/PageTracker';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'NextGen Trading Platform',
-  description: 'Advanced trading platform for spot, perpetual, and P2P trading',
+  title: 'SPF Trading Platform',
+  description: 'Your reliable partner to risk-free funding - Advanced prop firm trading platform',
 };
 
 export default function RootLayout({
@@ -25,7 +26,7 @@ export default function RootLayout({
         <Providers>
           <ToastProvider>
             <PageTracker />
-            <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-400">
+            <div className="page-wrapper flex flex-col">
               <Header />
               <main className="flex-grow">{children}</main>
               <Footer />
@@ -36,4 +37,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-} 
+}

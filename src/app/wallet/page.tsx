@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Tab } from '@headlessui/react';
-import { ArrowUpIcon, ArrowDownIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowUpIcon, ArrowDownIcon, CurrencyDollarIcon, QrCodeIcon, ClipboardIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const STATIC_WALLET_DATA = {
@@ -73,442 +73,576 @@ export default function WalletPage() {
     }, 1500);
   };
 
-  return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Wallet</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Total Balance: <span className="font-semibold text-gray-900 dark:text-white">${totalUsdValue.toFixed(2)} USD</span>
-          </p>
-        </div>
-        <div className="mt-4 lg:mt-0">
-          <input
-            type="text"
-            placeholder="Search coins"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-dark-100 rounded-md bg-white dark:bg-dark-200 text-gray-900 dark:text-white w-full lg:w-64 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-primary-500 dark:focus:border-primary-400"
-          />
-        </div>
-      </div>
+  const copyToClipboard = (text: string, message: string) => {
+    navigator.clipboard.writeText(text);
+    // In a real app, you'd use a toast notification here
+    alert(message);
+  };
 
-      <Tab.Group onChange={handleTabChange}>
-        <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-dark-200 p-1 mb-6">
-          <Tab className={({ selected }) =>
-            `w-full rounded-lg py-2.5 text-sm font-medium leading-5
-            ${selected
-              ? 'bg-white dark:bg-dark-300 text-primary-700 dark:text-primary-400 shadow'
-              : 'text-gray-700 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-300'
-            }`
-          }>
-            Balances
-          </Tab>
-          <Tab className={({ selected }) =>
-            `w-full rounded-lg py-2.5 text-sm font-medium leading-5
-            ${selected
-              ? 'bg-white dark:bg-dark-300 text-primary-700 dark:text-primary-400 shadow'
-              : 'text-gray-700 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-300'
-            }`
-          }>
-            Deposit
-          </Tab>
-          <Tab className={({ selected }) =>
-            `w-full rounded-lg py-2.5 text-sm font-medium leading-5
-            ${selected
-              ? 'bg-white dark:bg-dark-300 text-primary-700 dark:text-primary-400 shadow'
-              : 'text-gray-700 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-300'
-            }`
-          }>
-            Withdraw
-          </Tab>
-          <Tab className={({ selected }) =>
-            `w-full rounded-lg py-2.5 text-sm font-medium leading-5
-            ${selected
-              ? 'bg-white dark:bg-dark-300 text-primary-700 dark:text-primary-400 shadow'
-              : 'text-gray-700 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-300'
-            }`
-          }>
-            Transactions
-          </Tab>
-        </Tab.List>
-        
-        <Tab.Panels>
-          <Tab.Panel>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white dark:bg-dark-200 rounded-lg overflow-hidden">
-                <thead className="bg-gray-50 dark:bg-dark-300">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Coin
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Available Balance
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      In Order
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      USD Value
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredBalances.length > 0 ? (
-                    filteredBalances.map((balance) => (
-                      <tr key={balance.coin} className="hover:bg-gray-50 dark:hover:bg-dark-300">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {balance.coin}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                          {balance.available}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {balance.inOrder}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {balance.total}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                          ${parseFloat(balance.usdValue).toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                          <div className="flex justify-end space-x-3">
-                            <button
-                              onClick={() => {
-                                setSelectedCoin(balance.coin);
-                                setActiveTab('deposit');
-                                handleCoinSelect(balance.coin);
-                              }}
-                              className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium"
-                            >
-                              Deposit
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedCoin(balance.coin);
-                                setActiveTab('withdrawal');
-                              }}
-                              className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium"
-                            >
-                              Withdraw
-                            </button>
-                          </div>
+  return (
+    <div className="page-wrapper">
+      <div className="container-custom section-padding">
+        {/* Page Header */}
+        <div className="flex-between mb-8 mobile-flex gap-4">
+          <div>
+            <h1 className="heading-secondary text-gradient-muted mb-2">Wallet Management</h1>
+            <div className="flex items-center space-x-4">
+              <p className="text-gradient-secondary">
+                Total Portfolio Value:
+              </p>
+              <div className="flex items-center space-x-2">
+                <CurrencyDollarIcon className="h-5 w-5 text-brand" />
+                <span className="text-2xl font-light text-gradient-primary">
+                  ${totalUsdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search cryptocurrencies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input w-full md:w-64"
+            />
+          </div>
+        </div>
+
+        {/* Portfolio Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="card text-center">
+            <div className="text-lg font-light text-gradient-primary mb-2">
+              ${totalUsdValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </div>
+            <div className="text-sm text-gradient-secondary">Total Balance</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-lg font-light text-gradient-primary mb-2">
+              {STATIC_WALLET_DATA.balances.length}
+            </div>
+            <div className="text-sm text-gradient-secondary">Assets</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-lg font-light text-gradient-primary mb-2">
+              ${STATIC_WALLET_DATA.balances.reduce((total, balance) => 
+                total + parseFloat(balance.inOrder) * (parseFloat(balance.usdValue) / parseFloat(balance.total)), 0
+              ).toFixed(2)}
+            </div>
+            <div className="text-sm text-gradient-secondary">In Orders</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-lg font-light text-gradient-primary mb-2">
+              {STATIC_WALLET_DATA.transactions.filter(tx => tx.status === 'pending').length}
+            </div>
+            <div className="text-sm text-gradient-secondary">Pending</div>
+          </div>
+        </div>
+
+        <Tab.Group onChange={handleTabChange}>
+          <Tab.List className="tab-list mb-8">
+            <Tab className={({ selected }) => `tab-button ${selected ? 'tab-button-active' : ''}`}>
+              Balances
+            </Tab>
+            <Tab className={({ selected }) => `tab-button ${selected ? 'tab-button-active' : ''}`}>
+              Deposit
+            </Tab>
+            <Tab className={({ selected }) => `tab-button ${selected ? 'tab-button-active' : ''}`}>
+              Withdraw
+            </Tab>
+            <Tab className={({ selected }) => `tab-button ${selected ? 'tab-button-active' : ''}`}>
+              History
+            </Tab>
+          </Tab.List>
+          
+          <Tab.Panels>
+            {/* Balances Tab */}
+            <Tab.Panel className="tab-content">
+              <div className="table-container">
+                <table className="table-main">
+                  <thead className="table-header">
+                    <tr>
+                      <th className="table-header-cell">Asset</th>
+                      <th className="table-header-cell">Available</th>
+                      <th className="table-header-cell">In Orders</th>
+                      <th className="table-header-cell">Total Balance</th>
+                      <th className="table-header-cell">USD Value</th>
+                      <th className="table-header-cell text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="table-body">
+                    {filteredBalances.length > 0 ? (
+                      filteredBalances.map((balance) => (
+                        <tr key={balance.coin} className="table-row">
+                          <td className="table-cell">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 bg-brand/20 rounded-full flex-center mr-3">
+                                <span className="text-brand font-bold text-sm">{balance.coin[0]}</span>
+                              </div>
+                              <div>
+                                <div className="font-medium text-white">{balance.coin}</div>
+                                <div className="text-xs text-gradient-secondary">{balance.coin} Network</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="table-cell text-white font-medium">
+                            {parseFloat(balance.available).toFixed(8)}
+                          </td>
+                          <td className="table-cell status-neutral">
+                            {parseFloat(balance.inOrder).toFixed(8)}
+                          </td>
+                          <td className="table-cell text-white font-medium">
+                            {parseFloat(balance.total).toFixed(8)}
+                          </td>
+                          <td className="table-cell">
+                            <div className="text-white font-medium">
+                              ${parseFloat(balance.usdValue).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </div>
+                            <div className="text-xs text-gradient-secondary">
+                              {((parseFloat(balance.usdValue) / totalUsdValue) * 100).toFixed(1)}% of portfolio
+                            </div>
+                          </td>
+                          <td className="table-cell text-right">
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedCoin(balance.coin);
+                                  setActiveTab('deposit');
+                                  handleCoinSelect(balance.coin);
+                                }}
+                                className="btn-ghost text-xs"
+                              >
+                                Deposit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedCoin(balance.coin);
+                                  setActiveTab('withdrawal');
+                                }}
+                                className="btn-ghost text-xs"
+                              >
+                                Withdraw
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="table-cell text-center status-neutral py-8">
+                          No assets found for "{searchQuery}"
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                        No coins found for "{searchQuery}"
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Tab.Panel>
-          
-          <Tab.Panel>
-            <div className="bg-white dark:bg-dark-200 p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Deposit Crypto</h2>
-              
-              {!selectedCoin ? (
-                <>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Select a coin to deposit:
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {STATIC_WALLET_DATA.balances.map(balance => (
-                      <button
-                        key={balance.coin}
-                        onClick={() => handleCoinSelect(balance.coin)}
-                        className="p-3 bg-gray-50 dark:bg-dark-300 hover:bg-gray-100 dark:hover:bg-dark-400 rounded-lg text-center transition-colors"
-                      >
-                        <div className="font-medium text-gray-900 dark:text-white">{balance.coin}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Network: {balance.coin}</div>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="font-semibold text-gray-900 dark:text-white">
-                      {selectedCoin} Deposit
-                    </div>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Tab.Panel>
+            
+            {/* Deposit Tab */}
+            <Tab.Panel className="tab-content">
+              <div className="card">
+                <div className="flex-between mb-6">
+                  <h2 className="text-xl font-medium text-white">Deposit Cryptocurrency</h2>
+                  {selectedCoin && (
                     <button
                       onClick={() => setSelectedCoin(null)}
-                      className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
+                      className="btn-ghost text-sm"
                     >
-                      Change Coin
+                      Change Asset
                     </button>
-                  </div>
-                  
-                  <div className="p-4 bg-gray-50 dark:bg-dark-300 rounded-lg mb-6">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      Network: {selectedCoin}
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Deposit Address
-                      </label>
-                      <div className="flex">
-                        <input
-                          type="text"
-                          readOnly
-                          value={depositAddress}
-                          className="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-l-md bg-gray-100 dark:bg-dark-400 text-gray-900 dark:text-white"
-                        />
+                  )}
+                </div>
+                
+                {!selectedCoin ? (
+                  <>
+                    <p className="text-gradient-secondary mb-6">
+                      Select a cryptocurrency to deposit into your funded trading account:
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {STATIC_WALLET_DATA.balances.map(balance => (
                         <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(depositAddress);
-                            alert('Address copied to clipboard');
-                          }}
-                          className="px-4 py-2 bg-primary-500 dark:bg-primary-600 text-white rounded-r-md hover:bg-primary-600 dark:hover:bg-primary-700"
+                          key={balance.coin}
+                          onClick={() => handleCoinSelect(balance.coin)}
+                          className="card-hover p-4 text-center"
                         >
-                          Copy
+                          <div className="w-10 h-10 bg-brand/20 rounded-full flex-center mx-auto mb-2">
+                            <span className="text-brand font-bold">{balance.coin[0]}</span>
+                          </div>
+                          <div className="font-medium text-white mb-1">{balance.coin}</div>
+                          <div className="text-xs text-gradient-secondary">
+                            Balance: {parseFloat(balance.available).toFixed(4)}
+                          </div>
                         </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="card-dark">
+                      <div className="flex-between mb-4">
+                
+                      <div className="font-medium text-white">
+                          {selectedCoin} Deposit Address
+                        </div>
+                        <span className="badge badge-success text-xs">
+                          {selectedCoin} Network
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-white mb-2">
+                            Deposit Address
+                          </label>
+                          <div className="flex">
+                            <input
+                              type="text"
+                              readOnly
+                              value={depositAddress}
+                              className="form-input flex-1 rounded-r-none bg-[#08090a] text-brand font-mono text-sm"
+                            />
+                            <button
+                              onClick={() => copyToClipboard(depositAddress, 'Address copied to clipboard!')}
+                              className="btn-primary rounded-l-none px-4 flex items-center"
+                            >
+                              <ClipboardIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex-center">
+                          <div className="bg-white p-4 rounded-lg">
+                            <div className="w-32 h-32 bg-gray-100 flex-center text-gray-400 rounded">
+                              <div className="text-center">
+                                <QrCodeIcon className="h-8 w-8 mx-auto mb-2" />
+                                <div className="text-xs">QR Code</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="mb-2">
-                      <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                        QR Code
-                      </div>
-                      <div className="w-32 h-32 bg-white dark:bg-dark-100 flex items-center justify-center text-gray-400 rounded">
-                        QR Placeholder
-                      </div>
+                    <div className="alert-warning">
+                      <p className="text-sm">
+                        <strong>Important:</strong> Only send {selectedCoin} to this address on the {selectedCoin} network. 
+                        Sending any other cryptocurrency or using a different network may result in permanent loss of funds.
+                      </p>
                     </div>
-                  </div>
-                  
-                  <div className="bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-amber-700 dark:text-amber-400">
-                          Only send {selectedCoin} to this deposit address. Sending any other asset may result in permanent loss.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </Tab.Panel>
-          
-          <Tab.Panel>
-            <div className="bg-white dark:bg-dark-200 p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Withdraw Crypto</h2>
-              
-              {!selectedCoin ? (
-                <>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Select a coin to withdraw:
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {STATIC_WALLET_DATA.balances.map(balance => (
-                      <button
-                        key={balance.coin}
-                        onClick={() => setSelectedCoin(balance.coin)}
-                        className="p-3 bg-gray-50 dark:bg-dark-300 hover:bg-gray-100 dark:hover:bg-dark-400 rounded-lg text-center transition-colors"
-                      >
-                        <div className="font-medium text-gray-900 dark:text-white">{balance.coin}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Available: {balance.available}
+                    
+                    <div className="card-dark">
+                      <h4 className="font-medium text-brand mb-3">Deposit Information</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex-between">
+                          <span className="text-gradient-secondary">Minimum Deposit:</span>
+                          <span className="text-white">0.001 {selectedCoin}</span>
                         </div>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="font-semibold text-gray-900 dark:text-white">
-                      {selectedCoin} Withdrawal
+                        <div className="flex-between">
+                          <span className="text-gradient-secondary">Confirmations Required:</span>
+                          <span className="text-white">{selectedCoin === 'BTC' ? '3' : selectedCoin === 'ETH' ? '12' : '6'}</span>
+                        </div>
+                        <div className="flex-between">
+                          <span className="text-gradient-secondary">Expected Arrival:</span>
+                          <span className="text-white">5-30 minutes</span>
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                )}
+              </div>
+            </Tab.Panel>
+            
+            {/* Withdraw Tab */}
+            <Tab.Panel className="tab-content">
+              <div className="card">
+                <div className="flex-between mb-6">
+                  <h2 className="text-xl font-medium text-white">Withdraw Cryptocurrency</h2>
+                  {selectedCoin && (
                     <button
                       onClick={() => setSelectedCoin(null)}
-                      className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
+                      className="btn-ghost text-sm"
                     >
-                      Change Coin
+                      Change Asset
                     </button>
-                  </div>
-                  
-                  <form onSubmit={handleWithdraw}>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Network
-                        </label>
-                        <select className="block w-full border border-gray-300 dark:border-dark-100 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-dark-300 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-                          <option value={selectedCoin}>{selectedCoin} Network</option>
-                        </select>
+                  )}
+                </div>
+                
+                {!selectedCoin ? (
+                  <>
+                    <p className="text-gradient-secondary mb-6">
+                      Select a cryptocurrency to withdraw from your account:
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {STATIC_WALLET_DATA.balances.map(balance => (
+                        <button
+                          key={balance.coin}
+                          onClick={() => setSelectedCoin(balance.coin)}
+                          className="card-hover p-4 text-center"
+                          disabled={parseFloat(balance.available) === 0}
+                        >
+                          <div className="w-10 h-10 bg-brand/20 rounded-full flex-center mx-auto mb-2">
+                            <span className="text-brand font-bold">{balance.coin[0]}</span>
+                          </div>
+                          <div className="font-medium text-white mb-1">{balance.coin}</div>
+                          <div className="text-xs text-gradient-secondary">
+                            Available: {parseFloat(balance.available).toFixed(8)}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <form onSubmit={handleWithdraw} className="space-y-6">
+                    <div className="card-dark">
+                      <div className="flex-between mb-4">
+                        <div className="font-medium text-white">
+                          Withdraw {selectedCoin}
+                        </div>
+                        <div className="text-sm text-gradient-secondary">
+                          Available: {STATIC_WALLET_DATA.balances.find(b => b.coin === selectedCoin)?.available || '0'} {selectedCoin}
+                        </div>
                       </div>
                       
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Address
-                        </label>
-                        <input
-                          type="text"
-                          value={withdrawalAddress}
-                          onChange={(e) => setWithdrawalAddress(e.target.value)}
-                          required
-                          placeholder={`Enter ${selectedCoin} address`}
-                          className="block w-full border border-gray-300 dark:border-dark-100 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-dark-300 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Amount
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-white mb-2">
+                            Network
+                          </label>
+                          <select className="form-select">
+                            <option value={selectedCoin}>{selectedCoin} Network</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-white mb-2">
+                            Recipient Address
+                          </label>
                           <input
                             type="text"
-                            value={withdrawalAmount}
-                            onChange={(e) => setWithdrawalAmount(e.target.value)}
+                            value={withdrawalAddress}
+                            onChange={(e) => setWithdrawalAddress(e.target.value)}
                             required
-                            placeholder="0.00"
-                            className="block w-full border border-gray-300 dark:border-dark-100 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-dark-300 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            placeholder={`Enter ${selectedCoin} address`}
+                            className="form-input"
                           />
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                            <span className="text-gray-500 dark:text-gray-400 sm:text-sm">
-                              {selectedCoin}
-                            </span>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-white mb-2">
+                            Amount
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={withdrawalAmount}
+                              onChange={(e) => setWithdrawalAmount(e.target.value)}
+                              required
+                              placeholder="0.00000000"
+                              className="form-input pr-20"
+                            />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const balance = STATIC_WALLET_DATA.balances.find(b => b.coin === selectedCoin);
+                                  if (balance) {
+                                    const maxAmount = parseFloat(balance.available) - parseFloat(STATIC_WALLET_DATA.networkFees[selectedCoin as keyof typeof STATIC_WALLET_DATA.networkFees]);
+                                    setWithdrawalAmount(Math.max(0, maxAmount).toFixed(8));
+                                  }
+                                }}
+                                className="text-brand hover:text-[#a6e600] text-sm font-medium"
+                              >
+                                MAX
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex justify-between text-xs mt-1">
-                          <span className="text-gray-500 dark:text-gray-400">
-                            Available: {STATIC_WALLET_DATA.balances.find(b => b.coin === selectedCoin)?.available || '0'} {selectedCoin}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const balance = STATIC_WALLET_DATA.balances.find(b => b.coin === selectedCoin);
-                              if (balance) {
-                                setWithdrawalAmount(balance.available);
-                              }
-                            }}
-                            className="text-primary-600 dark:text-primary-400"
-                          >
-                            Max
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between text-sm pt-3 border-t border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">Network Fee:</span>
-                        <span className="text-gray-900 dark:text-white">{STATIC_WALLET_DATA.networkFees[selectedCoin as keyof typeof STATIC_WALLET_DATA.networkFees]} {selectedCoin}</span>
-                      </div>
-                      
-                      <div className="pt-4">
-                        <button
-                          type="submit"
-                          disabled={isLoading}
-                          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                        >
-                          {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
-                          {isLoading ? 'Processing...' : 'Withdraw'}
-                        </button>
                       </div>
                     </div>
-                  </form>
-                </>
-              )}
-            </div>
-          </Tab.Panel>
-              
-          <Tab.Panel>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white dark:bg-dark-200 rounded-lg overflow-hidden">
-                <thead className="bg-gray-50 dark:bg-dark-300">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Asset
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Amount
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      TxID
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {STATIC_WALLET_DATA.transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-dark-300">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(tx.date).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex items-center">
-                          {tx.type === 'deposit' ? (
-                            <ArrowDownIcon className="mr-1 h-4 w-4 text-green-500" />
-                          ) : (
-                            <ArrowUpIcon className="mr-1 h-4 w-4 text-red-500" />
-                          )}
-                          <span className={tx.type === 'deposit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-                            {tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                    
+                    <div className="card-dark">
+                      <h4 className="font-medium text-white mb-3">Transaction Summary</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex-between">
+                          <span className="text-gradient-secondary">Amount:</span>
+                          <span className="text-white">{withdrawalAmount || '0.00000000'} {selectedCoin}</span>
+                        </div>
+                        <div className="flex-between">
+                          <span className="text-gradient-secondary">Network Fee:</span>
+                          <span className="text-white">
+                            {STATIC_WALLET_DATA.networkFees[selectedCoin as keyof typeof STATIC_WALLET_DATA.networkFees]} {selectedCoin}
                           </span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {tx.coin}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {tx.amount}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          tx.status === 'completed' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                            : tx.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                        }`}>
-                          {tx.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(tx.txId);
-                            alert('TxID copied to clipboard');
-                          }}
-                          className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
-                        >
-                          {`${tx.txId.slice(0, 6)}...${tx.txId.slice(-6)}`}
-                        </button>
-                      </td>
+                        <div className="flex-between border-t border-[#2a2b2e] pt-2 font-medium">
+                          <span className="text-white">You will receive:</span>
+                          <span className="text-brand">
+                            {withdrawalAmount ? 
+                              Math.max(0, parseFloat(withdrawalAmount) - parseFloat(STATIC_WALLET_DATA.networkFees[selectedCoin as keyof typeof STATIC_WALLET_DATA.networkFees])).toFixed(8) 
+                              : '0.00000000'} {selectedCoin}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="alert-warning">
+                      <p className="text-sm">
+                        <strong>Warning:</strong> Withdrawals are irreversible. Please double-check the recipient address and network before confirming.
+                      </p>
+                    </div>
+                    
+                    <button
+                      type="submit"
+                      disabled={isLoading || !withdrawalAddress || !withdrawalAmount}
+                      className={`btn-primary-large w-full ${(isLoading || !withdrawalAddress || !withdrawalAmount) ? 'btn-disabled' : ''}`}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="loading-spinner mr-2"></div>
+                          Processing Withdrawal...
+                        </div>
+                      ) : (
+                        `Withdraw ${selectedCoin}`
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </Tab.Panel>
+                
+            {/* Transaction History Tab */}
+            <Tab.Panel className="tab-content">
+              <div className="table-container">
+                <table className="table-main">
+                  <thead className="table-header">
+                    <tr>
+                      <th className="table-header-cell">Date & Time</th>
+                      <th className="table-header-cell">Type</th>
+                      <th className="table-header-cell">Asset</th>
+                      <th className="table-header-cell">Amount</th>
+                      <th className="table-header-cell">Status</th>
+                      <th className="table-header-cell text-right">Transaction ID</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="table-body">
+                    {STATIC_WALLET_DATA.transactions.map((tx) => (
+                      <tr key={tx.id} className="table-row">
+                        <td className="table-cell status-neutral">
+                          <div className="text-sm">
+                            {new Date(tx.date).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-gradient-secondary">
+                            {new Date(tx.date).toLocaleTimeString()}
+                          </div>
+                        </td>
+                        <td className="table-cell">
+                          <div className="flex items-center">
+                            {tx.type === 'deposit' ? (
+                              <ArrowDownIcon className="mr-2 h-4 w-4 status-positive" />
+                            ) : (
+                              <ArrowUpIcon className="mr-2 h-4 w-4 status-negative" />
+                            )}
+                            <span className={`badge text-xs ${tx.type === 'deposit' ? 'badge-success' : 'badge-error'}`}>
+                              {tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="table-cell">
+                          <div className="flex items-center">
+                            <div className="w-6 h-6 bg-brand/20 rounded-full flex-center mr-2">
+                              <span className="text-brand font-bold text-xs">{tx.coin[0]}</span>
+                            </div>
+                            <span className="font-medium text-white">{tx.coin}</span>
+                          </div>
+                        </td>
+                        <td className="table-cell text-white font-medium">
+                          {tx.amount}
+                        </td>
+                        <td className="table-cell">
+                          <span className={`badge text-xs ${
+                            tx.status === 'completed' 
+                              ? 'badge-success' 
+                              : tx.status === 'pending'
+                                ? 'badge-warning'
+                                : 'badge-error'
+                          }`}>
+                            {tx.status}
+                          </span>
+                        </td>
+                        <td className="table-cell text-right">
+                          <button
+                            onClick={() => copyToClipboard(tx.txId, 'Transaction ID copied to clipboard!')}
+                            className="btn-ghost text-xs font-mono"
+                            title="Click to copy full transaction ID"
+                          >
+                            {`${tx.txId.slice(0, 8)}...${tx.txId.slice(-8)}`}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {STATIC_WALLET_DATA.transactions.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="text-gradient-secondary mb-4">
+                    <CurrencyDollarIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No transaction history</p>
+                    <p className="text-sm">Your deposits and withdrawals will appear here</p>
+                  </div>
+                </div>
+              )}
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+
+        {/* Security Notice */}
+        <div className="mt-8 card">
+          <h3 className="text-lg font-medium text-white mb-4">Security & Important Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">Fund Security</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Your funds are secured with multi-signature wallets and cold storage. We use industry-leading security practices.
+                </p>
+              </div>
             </div>
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+            
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">Address Verification</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Always verify withdrawal addresses carefully. Transactions are irreversible once confirmed on the blockchain.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">Network Fees</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Network fees vary based on blockchain congestion. Fees are deducted from your withdrawal amount.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
+              <div>
+                <h4 className="font-medium text-brand text-sm mb-1">24/7 Support</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Our support team is available around the clock to assist with any wallet-related issues or questions.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-} 
+}

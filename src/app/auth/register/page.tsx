@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import TermsModal from '@/components/ui/TermsModal';
 
 import { useRegisterMutation } from '@/services/userService';
+
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -25,7 +26,6 @@ export default function RegisterPage() {
   const [termsType, setTermsType] = useState<'terms' | 'privacy'>('terms');
 
   const [register, { isLoading }] = useRegisterMutation();
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -83,23 +83,9 @@ export default function RegisterPage() {
       return;
     }
 
-
     try {
-
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     username: formData.username,
-      //     email: formData.email,
-      //     password: formData.password,
-      //   }),
-      // });
-
       const { status, data, success } = await register({ ...formData }).unwrap();
-
       await new Promise(resolve => setTimeout(resolve, 1000));
-
       router.push('/auth/login');
     } catch (err: any) {
       console.error('Registration error:', err.data?.errors?.fields);
@@ -117,28 +103,36 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-400 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-dark-300 p-8 rounded-xl shadow-md">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create an Account</h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Join our platform to start trading cryptocurrencies
-          </p>
-        </div>
-
-        {generalError && (
-          <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 mb-4">
-            <p className="text-red-700 dark:text-red-400">{generalError}</p>
+    <div className="page-wrapper flex-center section-padding">
+      <div className="w-full max-w-md">
+        <div className="card">
+          <div className="text-center mb-8">
+            <div className="nav-logo justify-center mb-6">
+              <div className="nav-logo-icon">
+                <span className="text-black font-bold text-sm">S</span>
+              </div>
+              <span className="nav-logo-text">SPF</span>
+            </div>
+            <h1 className="heading-tertiary text-gradient-muted mb-2">
+              Create Your Trading Account
+            </h1>
+            <p className="text-gradient-secondary">
+              Join SPF and start your funded trading journey
+            </p>
           </div>
-        )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Username
-              </label>
-              <div className="mt-1">
+          {generalError && (
+            <div className="alert-error mb-6">
+              <p>{generalError}</p>
+            </div>
+          )}
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-white mb-2">
+                  Username
+                </label>
                 <input
                   id="username"
                   name="username"
@@ -147,20 +141,18 @@ export default function RegisterPage() {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${errors.username ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm`}
+                  className={`form-input ${errors.username ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                  placeholder="Enter your username"
                 />
                 {errors.username && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.username}</p>
+                  <p className="mt-2 text-sm text-error">{errors.username}</p>
                 )}
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email address
-              </label>
-              <div className="mt-1">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
+                  Email address
+                </label>
                 <input
                   id="email"
                   name="email"
@@ -169,146 +161,144 @@ export default function RegisterPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${errors.email ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm`}
+                  className={`form-input ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                  placeholder="Enter your email"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
+                  <p className="mt-2 text-sm text-error">{errors.email}</p>
                 )}
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
-              </label>
-              <div className="mt-1 relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${errors.password ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10`}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" aria-hidden="true" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" aria-hidden="true" />
-                  )}
-                </button>
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Confirm Password
-              </label>
-              <div className="mt-1 relative">
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`block w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-dark-100'
-                    } rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10`}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" aria-hidden="true" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" aria-hidden="true" />
-                  )}
-                </button>
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="agreeTerms"
-                  name="agreeTerms"
-                  type="checkbox"
-                  checked={formData.agreeTerms}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-400 border-gray-300 dark:border-dark-100 rounded"
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="agreeTerms" className="font-medium text-gray-700 dark:text-gray-300">
-                  I agree to the{' '}
-                  <button
-                    type="button"
-                    onClick={() => openTermsModal('terms')}
-                    className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-                  >
-                    Terms of Service
-                  </button>{' '}
-                  and{' '}
-                  <button
-                    type="button"
-                    onClick={() => openTermsModal('privacy')}
-                    className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-                  >
-                    Privacy Policy
-                  </button>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+                  Password
                 </label>
-                {errors.agreeTerms && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.agreeTerms}</p>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`form-input pr-12 ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Create a strong password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-2 text-sm text-error">{errors.password}</p>
                 )}
               </div>
-            </div>
-          </div>
 
-          <div>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={`form-input pr-12 ${errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="mt-2 text-sm text-error">{errors.confirmPassword}</p>
+                )}
+              </div>
+
+              <div className="flex items-start">
+                <div className="flex items-center h-5">
+                  <input
+                    id="agreeTerms"
+                    name="agreeTerms"
+                    type="checkbox"
+                    checked={formData.agreeTerms}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-brand focus:ring-brand border-[#2a2b2e] rounded bg-[#1a1b1e]"
+                  />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="agreeTerms" className="font-medium text-gradient-secondary">
+                    I agree to the{' '}
+                    <button
+                      type="button"
+                      onClick={() => openTermsModal('terms')}
+                      className="text-brand hover:text-[#a6e600] transition-colors underline"
+                    >
+                      Terms of Service
+                    </button>{' '}
+                    and{' '}
+                    <button
+                      type="button"
+                      onClick={() => openTermsModal('privacy')}
+                      className="text-brand hover:text-[#a6e600] transition-colors underline"
+                    >
+                      Privacy Policy
+                    </button>
+                  </label>
+                  {errors.agreeTerms && (
+                    <p className="mt-1 text-sm text-error">{errors.agreeTerms}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+              className={`btn-primary-large w-full ${isLoading ? 'btn-disabled' : ''}`}
             >
               {isLoading ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
+                <div className="flex items-center justify-center">
+                  <div className="loading-spinner mr-2"></div>
                   Creating account...
-                </>
+                </div>
               ) : (
-                'Sign up'
+                'Create Account'
               )}
             </button>
-          </div>
-        </form>
+          </form>
 
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
-            <Link
-              href="/auth/login"
-              className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-            >
-              Sign in
-            </Link>
-          </p>
+          <div className="text-center mt-6">
+            <p className="text-gradient-secondary">
+              Already have an account?{' '}
+              <Link
+                href="/auth/login"
+                className="text-brand hover:text-[#a6e600] font-medium transition-colors"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -319,4 +309,4 @@ export default function RegisterPage() {
       />
     </div>
   );
-} 
+}

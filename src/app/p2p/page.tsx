@@ -239,168 +239,210 @@ export default function P2PPage() {
   const availableFiatCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CNY', 'INR'];
 
   return (
-    <div className="container-custom py-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">P2P Trading</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Buy and sell crypto directly with other users using your preferred payment methods
-          </p>
+    <div className="page-wrapper">
+      <div className="container-custom section-padding">
+        <div className="flex-between mb-8 mobile-flex gap-4">
+          <div>
+            <h1 className="heading-secondary text-gradient-muted mb-2">P2P Trading</h1>
+            <p className="text-gradient-secondary">
+              Buy and sell crypto directly with other users using your preferred payment methods
+            </p>
+          </div>
+          
+          {isAuthenticated && (
+            <Link href="/p2p/create-offer" className="btn-primary flex items-center">
+              <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+              Create Offer
+            </Link>
+          )}
+        </div>
+
+        <div className="card">
+          <Tab.Group>
+            <Tab.List className="tab-list">
+              <Tab
+                className={({ selected }) =>
+                  `tab-button ${selected ? 'tab-button-active' : ''}`
+                }
+                onClick={() => setTradeType('buy')}
+              >
+                Buy Crypto
+              </Tab>
+              <Tab
+                className={({ selected }) =>
+                  `tab-button ${selected ? 'tab-button-active' : ''}`
+                }
+                onClick={() => setTradeType('sell')}
+              >
+                Sell Crypto
+              </Tab>
+            </Tab.List>
+            
+            <Tab.Panels>
+              <Tab.Panel className="tab-content">
+                <P2PFilters
+                  availableAssets={availableAssets}
+                  availableFiatCurrencies={availableFiatCurrencies}
+                  paymentMethods={effectivePaymentMethods}
+                  selectedAsset={selectedAsset}
+                  selectedFiatCurrency={selectedFiatCurrency}
+                  selectedPaymentMethod={selectedPaymentMethod}
+                  onAssetChange={setSelectedAsset}
+                  onFiatCurrencyChange={setSelectedFiatCurrency}
+                  onPaymentMethodChange={setSelectedPaymentMethod}
+                  isLoadingPaymentMethods={isLoadingPaymentMethods && !effectivePaymentMethods}
+                />
+                
+                {isLoadingOffers && !effectiveOffers ? (
+                  <div className="flex-center py-12">
+                    <LoadingSpinner size="lg" />
+                  </div>
+                ) : effectiveOffers && effectiveOffers.length > 0 ? (
+                  <P2POfferList offers={effectiveOffers} tradeType={tradeType} />
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gradient-secondary mb-4">
+                      No offers found for your selected filters. Try changing your filters or create your own offer.
+                    </p>
+                    {isAuthenticated && (
+                      <Link href="/p2p/create-offer" className="btn-primary">
+                        Create Offer
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </Tab.Panel>
+              
+              <Tab.Panel className="tab-content">
+                <P2PFilters
+                  availableAssets={availableAssets}
+                  availableFiatCurrencies={availableFiatCurrencies}
+                  paymentMethods={effectivePaymentMethods}
+                  selectedAsset={selectedAsset}
+                  selectedFiatCurrency={selectedFiatCurrency}
+                  selectedPaymentMethod={selectedPaymentMethod}
+                  onAssetChange={setSelectedAsset}
+                  onFiatCurrencyChange={setSelectedFiatCurrency}
+                  onPaymentMethodChange={setSelectedPaymentMethod}
+                  isLoadingPaymentMethods={isLoadingPaymentMethods && !effectivePaymentMethods}
+                />
+                
+                {isLoadingOffers && !effectiveOffers ? (
+                  <div className="flex-center py-12">
+                    <LoadingSpinner size="lg" />
+                  </div>
+                ) : effectiveOffers && effectiveOffers.length > 0 ? (
+                  <P2POfferList offers={effectiveOffers} tradeType={tradeType} />
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gradient-secondary mb-4">
+                      No offers found for your selected filters. Try changing your filters or create your own offer.
+                    </p>
+                    {isAuthenticated && (
+                      <Link href="/p2p/create-offer" className="btn-primary">
+                        Create Offer
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </Tab.Panel>
+            </Tab.Panels>
+          </Tab.Group>
         </div>
         
-        {isAuthenticated && (
-          <Link
-            href="/p2p/create-offer"
-            className="mt-4 md:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-            Create Offer
-          </Link>
-        )}
-      </div>
-
-      <div className="bg-white dark:bg-dark-300 rounded-lg shadow-sm overflow-hidden">
-        <Tab.Group>
-          <Tab.List className="flex border-b border-gray-200 dark:border-dark-100">
-            <Tab
-              className={({ selected }) =>
-                `py-4 px-6 text-sm font-medium focus:outline-none ${
-                  selected
-                    ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                }`
-              }
-              onClick={() => setTradeType('buy')}
-            >
-              Buy Crypto
-            </Tab>
-            <Tab
-              className={({ selected }) =>
-                `py-4 px-6 text-sm font-medium focus:outline-none ${
-                  selected
-                    ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                }`
-              }
-              onClick={() => setTradeType('sell')}
-            >
-              Sell Crypto
-            </Tab>
-          </Tab.List>
-          
-          <Tab.Panels>
-            <Tab.Panel className="p-4">
-              <P2PFilters
-                availableAssets={availableAssets}
-                availableFiatCurrencies={availableFiatCurrencies}
-                paymentMethods={effectivePaymentMethods}
-                selectedAsset={selectedAsset}
-                selectedFiatCurrency={selectedFiatCurrency}
-                selectedPaymentMethod={selectedPaymentMethod}
-                onAssetChange={setSelectedAsset}
-                onFiatCurrencyChange={setSelectedFiatCurrency}
-                onPaymentMethodChange={setSelectedPaymentMethod}
-                isLoadingPaymentMethods={isLoadingPaymentMethods && !effectivePaymentMethods}
-              />
-              
-              {isLoadingOffers && !effectiveOffers ? (
-                <div className="flex justify-center py-12">
-                  <LoadingSpinner size="lg" />
-                </div>
-              ) : effectiveOffers && effectiveOffers.length > 0 ? (
-                <P2POfferList offers={effectiveOffers} tradeType={tradeType} />
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-600 dark:text-gray-400">
-                    No offers found for your selected filters. Try changing your filters or create your own offer.
-                  </p>
-                  {isAuthenticated && (
-                    <Link
-                      href="/p2p/create-offer"
-                      className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                    >
-                      Create Offer
-                    </Link>
-                  )}
-                </div>
-              )}
-            </Tab.Panel>
+        {/* How P2P Trading Works */}
+        <div className="mt-12">
+          <div className="card">
+            <h2 className="heading-tertiary text-gradient-muted mb-8 text-center">How P2P Trading Works</h2>
             
-            <Tab.Panel className="p-4">
-              <P2PFilters
-                availableAssets={availableAssets}
-                availableFiatCurrencies={availableFiatCurrencies}
-                paymentMethods={effectivePaymentMethods}
-                selectedAsset={selectedAsset}
-                selectedFiatCurrency={selectedFiatCurrency}
-                selectedPaymentMethod={selectedPaymentMethod}
-                onAssetChange={setSelectedAsset}
-                onFiatCurrencyChange={setSelectedFiatCurrency}
-                onPaymentMethodChange={setSelectedPaymentMethod}
-                isLoadingPaymentMethods={isLoadingPaymentMethods && !effectivePaymentMethods}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex flex-col items-center text-center">
+                <div className="icon-container mb-6">
+                  <span className="text-2xl font-bold text-black">1</span>
+                </div>
+                <h3 className="text-lg font-medium text-white mb-3">Find an Offer</h3>
+                <p className="text-gradient-secondary">
+                  Browse available offers from other users or create your own offer with your preferred payment methods.
+                </p>
+              </div>
               
-              {isLoadingOffers && !effectiveOffers ? (
-                <div className="flex justify-center py-12">
-                  <LoadingSpinner size="lg" />
+              <div className="flex flex-col items-center text-center">
+                <div className="icon-container mb-6">
+                  <span className="text-2xl font-bold text-black">2</span>
                 </div>
-              ) : effectiveOffers && effectiveOffers.length > 0 ? (
-                <P2POfferList offers={effectiveOffers} tradeType={tradeType} />
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-600 dark:text-gray-400">
-                    No offers found for your selected filters. Try changing your filters or create your own offer.
-                  </p>
-                  {isAuthenticated && (
-                    <Link
-                      href="/p2p/create-offer"
-                      className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                    >
-                      Create Offer
-                    </Link>
-                  )}
+                <h3 className="text-lg font-medium text-white mb-3">Trade Securely</h3>
+                <p className="text-gradient-secondary">
+                  Our escrow system holds the crypto until the payment is confirmed, ensuring safe and secure transactions.
+                </p>
+              </div>
+              
+              <div className="flex flex-col items-center text-center">
+                <div className="icon-container mb-6">
+                  <span className="text-2xl font-bold text-black">3</span>
                 </div>
-              )}
-            </Tab.Panel>
-          </Tab.Panels>
-        </Tab.Group>
-      </div>
-      
-      <div className="mt-8 bg-white dark:bg-dark-300 rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">How P2P Trading Works</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-primary-100 dark:bg-primary-900/30 rounded-full p-4 mb-4">
-              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">1</span>
+                <h3 className="text-lg font-medium text-white mb-3">Receive Funds</h3>
+                <p className="text-gradient-secondary">
+                  Once the payment is confirmed, the crypto is released from escrow to the buyer's wallet automatically.
+                </p>
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Find an Offer</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Browse available offers from other users or create your own offer with your preferred payment methods.
-            </p>
           </div>
-          
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-primary-100 dark:bg-primary-900/30 rounded-full p-4 mb-4">
-              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">2</span>
+        </div>
+
+        {/* Trading Statistics */}
+        <div className="mt-8">
+          <h2 className="heading-tertiary text-gradient-muted mb-6">P2P Trading Statistics</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">50K+</div>
+              <div className="text-sm text-gradient-secondary">Active Users</div>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Trade Securely</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Our escrow system holds the crypto until the payment is confirmed, ensuring safe and secure transactions.
-            </p>
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">99.8%</div>
+              <div className="text-sm text-gradient-secondary">Success Rate</div>
+            </div>
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">15+</div>
+              <div className="text-sm text-gradient-secondary">Payment Methods</div>
+            </div>
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">24/7</div>
+              <div className="text-sm text-gradient-secondary">Support</div>
+            </div>
           </div>
-          
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-primary-100 dark:bg-primary-900/30 rounded-full p-4 mb-4">
-              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">3</span>
+        </div>
+
+        {/* Safety Information */}
+        <div className="mt-8 card">
+          <h3 className="text-lg font-medium text-white mb-4">Safety & Security</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium text-brand mb-2">Escrow Protection</h4>
+              <p className="text-gradient-secondary text-sm">
+                All trades are protected by our escrow system. Crypto is held securely until payment is confirmed.
+              </p>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Receive Funds</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Once the payment is confirmed, the crypto is released from escrow to the buyer's wallet automatically.
-            </p>
+            <div>
+              <h4 className="font-medium text-brand mb-2">Verified Users</h4>
+              <p className="text-gradient-secondary text-sm">
+                Trade with confidence knowing all users go through KYC verification and reputation tracking.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-brand mb-2">Dispute Resolution</h4>
+              <p className="text-gradient-secondary text-sm">
+                Our support team is available 24/7 to help resolve any disputes quickly and fairly.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-brand mb-2">Secure Payments</h4>
+              <p className="text-gradient-secondary text-sm">
+                Multiple payment methods supported with secure processing and fraud protection.
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

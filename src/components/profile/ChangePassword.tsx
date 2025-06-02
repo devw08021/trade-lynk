@@ -57,6 +57,9 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordP
     if (newPassword && confirmPassword && newPassword !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match.';
     }
+    if (newPassword && newPassword.length < 8) {
+      newErrors.newPassword = 'Password must be at least 8 characters long.';
+    }
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
@@ -70,7 +73,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordP
       };
       const { success: apiStatus, result, message } = await updatePassword(data).unwrap();
       if (apiStatus) {
-        success('Profile updated successfully');
+        success('Password updated successfully');
         onClose();
       }
       if (message) {
@@ -103,18 +106,21 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordP
       setErrors({});
     }
   }, [isOpen]);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Change Password" size="md">
-      <div className="space-y-4">
-        {/* Field Errors */}
+      <div className="space-y-6">
+        {/* General Error */}
         {errors.form && (
-          <div className="text-sm text-red-600 dark:text-red-400">{errors.form}</div>
+          <div className="alert-error">
+            <p className="text-sm">{errors.form}</p>
+          </div>
         )}
 
         {/* Current Password */}
         <div className="space-y-2">
-          <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            CURRENT PASSWORD
+          <label htmlFor="currentPassword" className="block text-sm font-medium text-white">
+            Current Password
           </label>
           <div className="relative">
             <input
@@ -124,23 +130,26 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordP
               autoComplete="current-password"
               value={form.currentPassword}
               onChange={handleChange}
-              className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10"
+              placeholder="Enter your current password"
+              className={`form-input pr-12 ${errors.currentPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
               onClick={() => toggleVisibility('showCurrent')}
             >
               {form.showCurrent ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
             </button>
           </div>
-          {errors.currentPassword && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.currentPassword}</p>}
+          {errors.currentPassword && (
+            <p className="mt-2 text-sm text-error">{errors.currentPassword}</p>
+          )}
         </div>
 
         {/* New Password */}
         <div className="space-y-2">
-          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            NEW PASSWORD
+          <label htmlFor="newPassword" className="block text-sm font-medium text-white">
+            New Password
           </label>
           <div className="relative">
             <input
@@ -150,23 +159,29 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordP
               autoComplete="new-password"
               value={form.newPassword}
               onChange={handleChange}
-              className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10"
+              placeholder="Enter your new password"
+              className={`form-input pr-12 ${errors.newPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
               onClick={() => toggleVisibility('showNew')}
             >
               {form.showNew ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
             </button>
           </div>
-          {errors.newPassword && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.newPassword}</p>}
+          {errors.newPassword && (
+            <p className="mt-2 text-sm text-error">{errors.newPassword}</p>
+          )}
+          <div className="text-xs text-gradient-secondary">
+            Password must be at least 8 characters long
+          </div>
         </div>
 
         {/* Confirm Password */}
         <div className="space-y-2">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            CONFIRM PASSWORD
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-white">
+            Confirm New Password
           </label>
           <div className="relative">
             <input
@@ -176,31 +191,80 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordP
               autoComplete="new-password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className="block w-full px-3 py-2 border border-gray-300 dark:border-dark-100 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-200 dark:text-white sm:text-sm pr-10"
+              placeholder="Confirm your new password"
+              className={`form-input pr-12 ${errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
               onClick={() => toggleVisibility('showConfirm')}
             >
               {form.showConfirm ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
             </button>
           </div>
-          {errors.confirmPassword && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>}
+          {errors.confirmPassword && (
+            <p className="mt-2 text-sm text-error">{errors.confirmPassword}</p>
+          )}
+        </div>
+
+        {/* Password Strength Indicator */}
+        {form.newPassword && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-white">Password Strength</div>
+            <div className="space-y-1">
+              <div className="flex items-center text-xs">
+                <div className={`w-2 h-2 rounded-full mr-2 ${form.newPassword.length >= 8 ? 'bg-green-400' : 'bg-gray-600'}`}></div>
+                <span className={form.newPassword.length >= 8 ? 'text-success' : 'text-gradient-secondary'}>
+                  At least 8 characters
+                </span>
+              </div>
+              <div className="flex items-center text-xs">
+                <div className={`w-2 h-2 rounded-full mr-2 ${/[A-Z]/.test(form.newPassword) ? 'bg-green-400' : 'bg-gray-600'}`}></div>
+                <span className={/[A-Z]/.test(form.newPassword) ? 'text-success' : 'text-gradient-secondary'}>
+                  Contains uppercase letter
+                </span>
+              </div>
+              <div className="flex items-center text-xs">
+                <div className={`w-2 h-2 rounded-full mr-2 ${/[0-9]/.test(form.newPassword) ? 'bg-green-400' : 'bg-gray-600'}`}></div>
+                <span className={/[0-9]/.test(form.newPassword) ? 'text-success' : 'text-gradient-secondary'}>
+                  Contains number
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Security Notice */}
+        <div className="alert-info">
+          <p className="text-sm">
+            <strong>Security Notice:</strong> Choose a strong password that you haven't used elsewhere. 
+            You'll need to log in again after changing your password.
+          </p>
         </div>
       </div>
 
-      <div className="flex justify-end space-x-2 mt-6">
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={form.loader}>
+      <div className="flex justify-end space-x-3 mt-8">
+        <button
+          onClick={onClose}
+          className="btn-outline"
+          disabled={form.loader}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={form.loader}
+          className={`btn-primary ${form.loader ? 'btn-disabled' : ''}`}
+        >
           {form.loader ? (
             <div className="flex items-center">
-              <LoadingSpinner size="sm" className="mr-2" />Updating...
+              <div className="loading-spinner mr-2"></div>
+              Updating...
             </div>
           ) : (
-            'Change Password'
+            'Update Password'
           )}
-        </Button>
+        </button>
       </div>
     </Modal>
   );

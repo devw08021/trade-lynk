@@ -46,184 +46,201 @@ export default function MarketsPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-0">Markets</h1>
-        
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search markets"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full md:w-64 border border-gray-300 dark:border-dark-100 rounded-md bg-white dark:bg-dark-200 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-primary-500 dark:focus:border-primary-400"
-          />
-          <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-2.5 text-gray-400" />
+    <div className="page-wrapper">
+      <div className="container-custom section-padding">
+        <div className="flex-between mb-8 mobile-flex gap-4">
+          <div>
+            <h1 className="heading-secondary text-gradient-muted mb-2">Trading Markets</h1>
+            <p className="text-gradient-secondary">Explore available trading pairs for your funded account</p>
+          </div>
+          
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search markets..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input pl-10 w-full md:w-64"
+            />
+            <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
+          </div>
+        </div>
+
+        <Tab.Group>
+          <Tab.List className="tab-list mb-8">
+            <Tab className={({ selected }) =>
+              `tab-button ${selected ? 'tab-button-active' : ''}`
+            }>
+              Spot Markets
+            </Tab>
+            <Tab className={({ selected }) =>
+              `tab-button ${selected ? 'tab-button-active' : ''}`
+            }>
+              Perpetual Futures
+            </Tab>
+          </Tab.List>
+          
+          <Tab.Panels>
+            <Tab.Panel className="tab-content">
+              {isLoading ? (
+                <div className="flex-center py-12">
+                  <LoadingSpinner size="lg" />
+                </div>
+              ) : (
+                <div className="table-container">
+                  <table className="table-main">
+                    <thead className="table-header">
+                      <tr>
+                        <th className="table-header-cell">Pair</th>
+                        <th className="table-header-cell">Price</th>
+                        <th className="table-header-cell">24h Change</th>
+                        <th className="table-header-cell">24h Volume</th>
+                        <th className="table-header-cell text-right">Trade</th>
+                      </tr>
+                    </thead>
+                    <tbody className="table-body">
+                      {filteredSpotMarkets.length > 0 ? (
+                        filteredSpotMarkets.map((market, index) => (
+                          <tr key={index} className="table-row">
+                            <td className="table-cell font-medium text-white">
+                              {market.symbol}
+                            </td>
+                            <td className="table-cell text-white">
+                              ${market.price}
+                            </td>
+                            <td className={`table-cell font-medium ${market.isPositive ? 'status-positive' : 'status-negative'}`}>
+                              {market.change}
+                            </td>
+                            <td className="table-cell status-neutral">
+                              ${market.volume}
+                            </td>
+                            <td className="table-cell text-right">
+                              <Link
+                                href={`/spot?symbol=${market.symbol}`}
+                                className="btn-ghost"
+                              >
+                                Trade
+                              </Link>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="table-cell text-center status-neutral py-8">
+                            No markets found for "{searchQuery}"
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Tab.Panel>
+              
+            <Tab.Panel className="tab-content">
+              {isLoading ? (
+                <div className="flex-center py-12">
+                  <LoadingSpinner size="lg" />
+                </div>
+              ) : (
+                <div className="table-container">
+                  <table className="table-main">
+                    <thead className="table-header">
+                      <tr>
+                        <th className="table-header-cell">Pair</th>
+                        <th className="table-header-cell">Price</th>
+                        <th className="table-header-cell">24h Change</th>
+                        <th className="table-header-cell">Funding Rate</th>
+                        <th className="table-header-cell">24h Volume</th>
+                        <th className="table-header-cell text-right">Trade</th>
+                      </tr>
+                    </thead>
+                    <tbody className="table-body">
+                      {filteredPerpetualMarkets.length > 0 ? (
+                        filteredPerpetualMarkets.map((market, index) => (
+                          <tr key={index} className="table-row">
+                            <td className="table-cell font-medium text-white">
+                              {market.symbol}
+                            </td>
+                            <td className="table-cell text-white">
+                              ${market.price}
+                            </td>
+                            <td className={`table-cell font-medium ${market.isPositive ? 'status-positive' : 'status-negative'}`}>
+                              {market.change}
+                            </td>
+                            <td className={`table-cell font-medium ${market.fundingRate.startsWith('+') ? 'status-positive' : 'status-negative'}`}>
+                              {market.fundingRate}
+                            </td>
+                            <td className="table-cell status-neutral">
+                              ${market.volume}
+                            </td>
+                            <td className="table-cell text-right">
+                              <Link
+                                href={`/perpetual?symbol=${market.symbol}`}
+                                className="btn-ghost"
+                              >
+                                Trade
+                              </Link>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="table-cell text-center status-neutral py-8">
+                            No markets found for "{searchQuery}"
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+
+        {/* Market Stats */}
+        <div className="mt-12">
+          <h2 className="heading-tertiary text-gradient-muted mb-6">Market Statistics</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">125+</div>
+              <div className="text-sm text-gradient-secondary">Trading Pairs</div>
+            </div>
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">$2.4B</div>
+              <div className="text-sm text-gradient-secondary">24h Volume</div>
+            </div>
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">0.1%</div>
+              <div className="text-sm text-gradient-secondary">Trading Fee</div>
+            </div>
+            <div className="card text-center">
+              <div className="text-2xl font-light text-gradient-primary mb-2">24/7</div>
+              <div className="text-sm text-gradient-secondary">Market Hours</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trading Info */}
+        <div className="mt-8 card">
+          <h3 className="text-lg font-medium text-white mb-4">Trading Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium text-brand mb-2">Spot Trading</h4>
+              <p className="text-gradient-secondary text-sm">
+                Trade cryptocurrencies directly with instant settlement. Perfect for portfolio building and long-term strategies.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-brand mb-2">Perpetual Futures</h4>
+              <p className="text-gradient-secondary text-sm">
+                Trade with leverage up to 100x on perpetual contracts with no expiry date. Advanced risk management tools included.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-
-      <Tab.Group>
-        <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-dark-200 p-1 mb-6">
-          <Tab className={({ selected }) =>
-            `w-full rounded-lg py-2.5 text-sm font-medium leading-5
-            ${selected
-              ? 'bg-white dark:bg-dark-300 text-primary-700 dark:text-primary-400 shadow'
-              : 'text-gray-700 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-300'
-            }`
-          }>
-            Spot Markets
-          </Tab>
-          <Tab className={({ selected }) =>
-            `w-full rounded-lg py-2.5 text-sm font-medium leading-5
-            ${selected
-              ? 'bg-white dark:bg-dark-300 text-primary-700 dark:text-primary-400 shadow'
-              : 'text-gray-700 dark:text-gray-400 hover:bg-white/[0.12] hover:text-primary-600 dark:hover:text-primary-300'
-            }`
-          }>
-            Perpetual Markets
-          </Tab>
-        </Tab.List>
-        
-        <Tab.Panels>
-          <Tab.Panel>
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner size="lg" />
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white dark:bg-dark-200 rounded-lg overflow-hidden">
-                  <thead className="bg-gray-50 dark:bg-dark-300">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Pair
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        24h Change
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        24h Volume
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Trade
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {filteredSpotMarkets.length > 0 ? (
-                      filteredSpotMarkets.map((market, index) => (
-                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-dark-300">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {market.symbol}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            ${market.price}
-                          </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${market.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {market.change}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                            ${market.volume}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                            <Link
-                              href={`/spot?symbol=${market.symbol}`}
-                              className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium"
-                            >
-                              Trade
-                            </Link>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                          No markets found for "{searchQuery}"
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Tab.Panel>
-            
-          <Tab.Panel>
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner size="lg" />
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white dark:bg-dark-200 rounded-lg overflow-hidden">
-                  <thead className="bg-gray-50 dark:bg-dark-300">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Pair
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        24h Change
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Funding Rate
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        24h Volume
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Trade
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {filteredPerpetualMarkets.length > 0 ? (
-                      filteredPerpetualMarkets.map((market, index) => (
-                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-dark-300">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {market.symbol}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            ${market.price}
-                          </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${market.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {market.change}
-                          </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${market.fundingRate.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {market.fundingRate}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                            ${market.volume}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                            <Link
-                              href={`/perpetual?symbol=${market.symbol}`}
-                              className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium"
-                            >
-                              Trade
-                            </Link>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                          No markets found for "{searchQuery}"
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
     </div>
   );
-} 
+}

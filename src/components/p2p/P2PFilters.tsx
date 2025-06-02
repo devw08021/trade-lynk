@@ -28,16 +28,16 @@ export default function P2PFilters({
   isLoadingPaymentMethods = false,
 }: P2PFiltersProps) {
   return (
-    <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:space-x-4 mb-6">
-      <div className="flex flex-col">
-        <label htmlFor="asset" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Asset
+    <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:space-x-4 mb-6 p-4 bg-[#0f1012] rounded-lg border border-[#2a2b2e]">
+      <div className="flex flex-col flex-1">
+        <label htmlFor="asset" className="block text-sm font-medium text-white mb-2">
+          Cryptocurrency
         </label>
         <select
           id="asset"
           value={selectedAsset}
           onChange={(e) => onAssetChange(e.target.value)}
-          className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-dark-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-dark-200 dark:text-white"
+          className="form-select"
         >
           {availableAssets.map((asset) => (
             <option key={asset} value={asset}>
@@ -47,15 +47,15 @@ export default function P2PFilters({
         </select>
       </div>
       
-      <div className="flex flex-col">
-        <label htmlFor="fiatCurrency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <div className="flex flex-col flex-1">
+        <label htmlFor="fiatCurrency" className="block text-sm font-medium text-white mb-2">
           Fiat Currency
         </label>
         <select
           id="fiatCurrency"
           value={selectedFiatCurrency}
           onChange={(e) => onFiatCurrencyChange(e.target.value)}
-          className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-dark-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-dark-200 dark:text-white"
+          className="form-select"
         >
           {availableFiatCurrencies.map((currency) => (
             <option key={currency} value={currency}>
@@ -65,8 +65,8 @@ export default function P2PFilters({
         </select>
       </div>
       
-      <div className="flex flex-col">
-        <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <div className="flex flex-col flex-1">
+        <label htmlFor="paymentMethod" className="block text-sm font-medium text-white mb-2">
           Payment Method
         </label>
         <select
@@ -74,7 +74,7 @@ export default function P2PFilters({
           value={selectedPaymentMethod || ''}
           onChange={(e) => onPaymentMethodChange(e.target.value || null)}
           disabled={isLoadingPaymentMethods}
-          className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-dark-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-dark-200 dark:text-white disabled:bg-gray-100 dark:disabled:bg-dark-300 disabled:cursor-not-allowed"
+          className={`form-select ${isLoadingPaymentMethods ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <option value="">All payment methods</option>
           {paymentMethods.map((method) => (
@@ -83,7 +83,27 @@ export default function P2PFilters({
             </option>
           ))}
         </select>
+        {isLoadingPaymentMethods && (
+          <div className="mt-1 flex items-center">
+            <div className="loading-spinner mr-2" style={{width: '12px', height: '12px'}}></div>
+            <span className="text-xs text-gradient-secondary">Loading payment methods...</span>
+          </div>
+        )}
+      </div>
+
+      {/* Clear Filters Button */}
+      <div className="flex flex-col justify-end">
+        <button
+          onClick={() => {
+            onAssetChange('BTC');
+            onFiatCurrencyChange('USD');
+            onPaymentMethodChange(null);
+          }}
+          className="btn-outline text-sm px-4 py-2 h-10"
+        >
+          Clear Filters
+        </button>
       </div>
     </div>
   );
-} 
+}

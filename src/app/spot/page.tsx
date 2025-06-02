@@ -117,7 +117,6 @@ export default function SpotTradingPage() {
   const effectiveOrderBook = isOrderBookError || !orderBook ? STATIC_MARKET_DATA.orderBook : orderBook;
   const effectiveRecentTrades = isTradesError || !recentTrades ? STATIC_MARKET_DATA.recentTrades : recentTrades;
 
-
   useEffect(() => {
     // const symbolFromUrl = searchParams?.get('symbol');
     const symbolFromUrl = "";
@@ -128,24 +127,26 @@ export default function SpotTradingPage() {
     } else if (!selectedPair && defaultPair) {
       dispatch(selectMarketPair(defaultPair));
     }
-  }, [effectiveMarketPairs, selectedPair]);
-
+  }, [effectiveMarketPairs, selectedPair, dispatch]);
 
   if (isLoadingPairs && !effectiveMarketPairs) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner size="lg" />
+      <div className="page-wrapper flex-center">
+        <div className="flex flex-col items-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gradient-secondary">Loading trading pairs...</p>
+        </div>
       </div>
     );
   }
 
   if (!effectiveMarketPairs || Object.keys(effectiveMarketPairs).length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4">
-          <p className="text-red-700 dark:text-red-400">
-            No trading pairs available. Please try again later.
-          </p>
+      <div className="page-wrapper">
+        <div className="container-custom section-padding">
+          <div className="alert-error">
+            <p>No trading pairs available. Please try again later.</p>
+          </div>
         </div>
       </div>
     );
@@ -155,86 +156,193 @@ export default function SpotTradingPage() {
     ? effectiveMarketPairs[selectedPair as keyof typeof effectiveMarketPairs]
     : null;
 
-
-
-
   const formattedOrderBook = {
     bids: effectiveOrderBook.bids.map(bid => [bid[0], bid[1]] as [string, string]),
     asks: effectiveOrderBook.asks.map(ask => [ask[0], ask[1]] as [string, string])
   };
 
-
   return (
-    <Suspense fallback={<LoadingSpinner size="lg" />}>
-      <div className="container-custom py-4">
-
-        <div className="mb-4">
-          <MarketSelector
-            pairs={effectiveMarketPairs}
-            selectedPair={selectedPair}
-            onSelectPair={(pair) => dispatch(selectMarketPair(pair))}
-          />
+    <div className="page-wrapper">
+      <Suspense fallback={
+        <div className="flex-center py-12">
+          <LoadingSpinner size="lg" />
         </div>
+      }>
+        <div className="container-custom py-4">
+          {/* Page Header */}
+          <div className="mb-6">
+            <h1 className="heading-secondary text-gradient-muted mb-2">Spot Trading</h1>
+            <p className="text-gradient-secondary">Trade cryptocurrencies with your funded account</p>
+          </div>
 
+          {/* Market Selector */}
+          <div className="mb-6">
+            <MarketSelector
+              pairs={effectiveMarketPairs}
+              selectedPair={selectedPair}
+              onSelectPair={(pair) => dispatch(selectMarketPair(pair))}
+            />
+          </div>
 
-        {currentPair && (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <div className="lg:col-span-3">
-              <div className="card mb-4 h-[500px]">
-                <SpotTradingView symbol={currentPair.symbol} />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="card h-[400px] overflow-hidden">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Order Book</h3>
-                  <OrderBook data={formattedOrderBook} />
+          {currentPair && (
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Main Trading Area */}
+              <div className="lg:col-span-3">
+                {/* Trading Chart */}
+                <div className="card mb-6 h-[500px]">
+                  <div className="flex-between mb-4">
+                    <h3 className="text-lg font-medium text-white">Price Chart</h3>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl font-light text-white">
+                        ${currentPair.lastPrice}
+                      </span>
+                      <span className={`badge ${parseFloat(currentPair.priceChangePercent) >= 0 ? 'badge-success' : 'badge-error'}`}>
+                        {currentPair.priceChangePercent}%
+                      </span>
+                    </div>
+                  </div>
+                  <SpotTradingView symbol={currentPair.symbol} />
                 </div>
 
-                <div className="card h-[400px] overflow-hidden">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Recent Trades</h3>
-                  <TradeHistory trades={effectiveRecentTrades || []} />
+                {/* Order Book and Trade History */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="card h-[400px] overflow-hidden">
+                    <div className="flex-between mb-4">
+                      <h3 className="text-lg font-medium text-white">Order Book</h3>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-400 rounded-full mr-1"></div>
+                          <span className="text-xs text-gradient-secondary">Bids</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-red-400 rounded-full mr-1"></div>
+                          <span className="text-xs text-gradient-secondary">Asks</span>
+                        </div>
+                      </div>
+                    </div>
+                    <OrderBook data={formattedOrderBook} />
+                  </div>
+
+                  <div className="card h-[400px] overflow-hidden">
+                    <div className="flex-between mb-4">
+                      <h3 className="text-lg font-medium text-white">Recent Trades</h3>
+                      <span className="text-xs text-gradient-secondary">Last 24h</span>
+                    </div>
+                    <TradeHistory trades={effectiveRecentTrades || []} />
+                  </div>
+                </div>
+
+                {/* Open Orders */}
+                <div className="card">
+                  <div className="flex-between mb-4">
+                    <h3 className="text-lg font-medium text-white">Open Orders</h3>
+                    <span className="badge badge-primary text-xs">Active</span>
+                  </div>
+                  <OpenOrders />
                 </div>
               </div>
 
-              <div className="card">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Open Orders</h3>
-                <OpenOrders />
+              {/* Trading Panel */}
+              <div className="lg:col-span-1">
+                <div className="card sticky top-4">
+                  <div className="mb-6">
+                    <div className="flex-between mb-4">
+                      <h3 className="text-lg font-medium text-white">
+                        {currentPair.baseAsset}/{currentPair.quoteAsset}
+                      </h3>
+                      <span className="badge badge-primary text-xs">SPOT</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="text-center">
+                        <div className="text-xs text-gradient-secondary mb-1">24h High</div>
+                        <div className="text-sm font-medium text-white">${currentPair.high}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gradient-secondary mb-1">24h Low</div>
+                        <div className="text-sm font-medium text-white">${currentPair.low}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gradient-secondary mb-1">24h Volume</div>
+                        <div className="text-sm font-medium text-white">{currentPair.volume}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gradient-secondary mb-1">Change</div>
+                        <div className={`text-sm font-medium ${parseFloat(currentPair.priceChangePercent) >= 0 ? 'status-positive' : 'status-negative'}`}>
+                          {currentPair.priceChangePercent}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <SpotOrderForm
+                    pair={currentPair}
+                    orderBook={effectiveOrderBook}
+                  />
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="lg:col-span-1">
-              <div className="card sticky top-4">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                  {currentPair.baseAsset}/{currentPair.quoteAsset}
-                </h3>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {currentPair.lastPrice}
-                    </span>
-                    <span className={`ml-2 text-sm font-medium ${parseFloat(currentPair.priceChangePercent) >= 0
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                      }`}>
-                      {currentPair.priceChangePercent}%
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <div>24h High: {currentPair.high}</div>
-                    <div>24h Low: {currentPair.low}</div>
-                  </div>
-                </div>
-
-                <SpotOrderForm
-                  pair={currentPair}
-                  orderBook={effectiveOrderBook}
-                />
+          {/* Trading Statistics */}
+          <div className="mt-8">
+            <h2 className="heading-tertiary text-gradient-muted mb-6">Trading Statistics</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="card text-center">
+                <div className="text-lg font-light text-gradient-primary mb-2">$2.4M</div>
+                <div className="text-sm text-gradient-secondary">24h Volume</div>
+              </div>
+              <div className="card text-center">
+                <div className="text-lg font-light text-gradient-primary mb-2">156</div>
+                <div className="text-sm text-gradient-secondary">Active Pairs</div>
+              </div>
+              <div className="card text-center">
+                <div className="text-lg font-light text-gradient-primary mb-2">0.1%</div>
+                <div className="text-sm text-gradient-secondary">Trading Fee</div>
+              </div>
+              <div className="card text-center">
+                <div className="text-lg font-light text-gradient-primary mb-2">24/7</div>
+                <div className="text-sm text-gradient-secondary">Market Hours</div>
               </div>
             </div>
           </div>
-        )}
 
-      </div>
-    </Suspense>
+          {/* Trading Information */}
+          <div className="mt-8 card">
+            <h3 className="text-lg font-medium text-white mb-4">Spot Trading Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium text-brand mb-2">Account Protection</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Your funded account is protected with our proprietary risk management system. 
+                  All trades are monitored in real-time to ensure compliance with trading rules.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium text-brand mb-2">Instant Execution</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Experience lightning-fast order execution with our advanced matching engine. 
+                  Zero slippage on major pairs with deep liquidity pools.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium text-brand mb-2">Advanced Tools</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Access professional trading tools including TradingView charts, order book depth, 
+                  and real-time market data to make informed trading decisions.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium text-brand mb-2">Risk Management</h4>
+                <p className="text-gradient-secondary text-sm">
+                  Built-in stop-loss and take-profit orders help manage your risk. 
+                  Position sizing tools ensure you stay within your account limits.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Suspense>
+    </div>
   );
-} 
+}

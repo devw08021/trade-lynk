@@ -103,7 +103,7 @@ html {
 
 /* Layout Components */
 .container-custom {
-  max-width: 1200px;
+  max-width: auto;
   margin: 0 auto;
   padding-left: 1rem;
   padding-right: 1rem;

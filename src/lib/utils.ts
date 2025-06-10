@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { WalletBalance } from "@/types/wallet";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -115,3 +116,19 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message
   return String(error)
 } 
+
+export const calculateTotalUsdValue = (balances: WalletBalance[]): number => {
+  return balances.reduce(
+    (total, balance) => total + parseFloat(balance.usdValue),
+    0
+  );
+};
+export const calculateInOrdersValue = (balances: WalletBalance[]): number => {
+  return balances.reduce(
+    (total, balance) =>
+      total +
+      parseFloat(balance.inOrder) *
+        (parseFloat(balance.usdValue) / parseFloat(balance.total)),
+    0
+  );
+};

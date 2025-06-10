@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import TermsModal from '@/components/ui/TermsModal';
+import { useToastContext } from '@/components/ui/ToastContext';
 
 import { useRegisterMutation } from '@/services/userService';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { success, error } = useToastContext();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -84,15 +86,17 @@ export default function RegisterPage() {
     }
 
     try {
-      const { status, data, success } = await register({ ...formData }).unwrap();
+      const { status, data, message, success: apiStatus } = await register({ ...formData }).unwrap();
+      if (message)
+        success(`${message}`);
       await new Promise(resolve => setTimeout(resolve, 1000));
       router.push('/auth/login');
     } catch (err: any) {
-      console.error('Registration error:', err.data?.errors?.fields);
-      if (err && (err as any).data?.errors || {}) {
-        setErrors({ ... (err as any).data?.errors?.fields || {} });
+      console.error('Registration error:', err.data);
+      if (err && (err as any).data?.errors) {
+        setErrors({ ... (err as any).data?.errors || {} });
       } else {
-        setGeneralError('An error occurred. Please try again.');
+        setGeneralError(err && (err as any).data?.message);
       }
     }
   };

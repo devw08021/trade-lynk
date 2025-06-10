@@ -49,7 +49,7 @@ export default function ProfilePage() {
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
 
-  const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit, reset } = useForm<ProfileFormData>({
+  const { values, errors, touched, isSubmitting, handleChange, handleBlur, handleSubmit, reset, setState } = useForm<ProfileFormData>({
 
     initialValues: {
       name: username || '',
@@ -66,18 +66,16 @@ export default function ProfilePage() {
 
       try {
         const { success: apiStatus, result, message } = await updateProfile(data).unwrap();
-        if (apiStatus) {
-          success('Profile updated successfully');
-        }
+
         if (message) {
           success(`${message}`);
         }
         setIsEditing(false);
       } catch (err: any) {
-        if (err && (err as any).data?.errors || {}) {
-          setErrors({ ... (err as any).data?.errors?.fields || {} });
+        if (err && (err as any).data?.errors) {
+          setState((prev) => ({ ...prev, errors: err && (err as any).data?.errors }))
         } else {
-          error('An error occurred. Please try again.');
+          error(err && (err as any).data?.message);
         }
       }
     }
@@ -200,7 +198,7 @@ export default function ProfilePage() {
                       ) : (
                         <p className="text-lg">{values.firstName}</p>
                       )}
-                      {touched.firstName && errors.firstName && (
+                      {errors.firstName && (
                         <p className="text-sm text-red-500">{errors.firstName}</p>
                       )}
                     </div>
@@ -217,7 +215,7 @@ export default function ProfilePage() {
                       ) : (
                         <p className="text-lg">@{values.username}</p>
                       )}
-                      {touched.username && errors.username && (
+                      {errors.username && (
                         <p className="text-sm text-red-500">{errors.username}</p>
                       )}
                     </div>
@@ -235,7 +233,7 @@ export default function ProfilePage() {
                       ) : (
                         <p className="text-lg">{values.email}</p>
                       )}
-                      {touched.email && errors.email && (
+                      {errors.email && (
                         <p className="text-sm text-red-500">{errors.email}</p>
                       )}
                     </div>
@@ -252,7 +250,7 @@ export default function ProfilePage() {
                       ) : (
                         <p className="text-lg">{values.bio}</p>
                       )}
-                      {touched.bio && errors.bio && (
+                      {errors.bio && (
                         <p className="text-sm text-red-500">{errors.bio}</p>
                       )}
                     </div>

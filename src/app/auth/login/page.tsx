@@ -25,17 +25,17 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
-      const { success: apiStatus, result, message } = await login({ email, password }).unwrap();
+      const { success: apiStatus, data, message } = await login({ email, password }).unwrap();
       if (message)
         success(`${message}`);
-      dispatch(loginSuccess(result));
+      dispatch(loginSuccess(data));
       router.push('/profile');
     } catch (err: any) {
       console.error('Registration error:', err);
       if (err && (err as any).data?.errors || {}) {
-        setErrors({ ... (err as any).data?.errors?.fields || {} });
+        setErrors({ ... (err as any).data?.errors });
       } else {
-        setErrorMessage('An error occurred. Please try again.');
+        setErrorMessage(err && (err as any).data?.message);
       }
     }
   };
@@ -91,7 +91,7 @@ export default function LoginPage() {
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <label htmlFor="password" className="sr-only">
                   Password

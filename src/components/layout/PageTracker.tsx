@@ -21,8 +21,8 @@ export default function PageTracker() {
 
     const getUserDetails = async (path: string) => {
         try {
-            const { result } = await getCurrentUser().unwrap();
-            dispatch(updateUserProfile(result));
+            const { data } = await getCurrentUser().unwrap();
+            dispatch(updateUserProfile(data));
 
         } catch (err: any) {
             console.error("🚀 ~ getUserDetails ~ error:", err)
@@ -31,13 +31,13 @@ export default function PageTracker() {
     };
     const getUserSettings = async (path: string) => {
         try {
-            const { result } = await getCurrentUserSetting().unwrap()
-            dispatch(setUserSetting(result));
-            if (result?.theme != mode) {
-                setNextTheme(result?.theme)
-                dispatch(setTheme(result?.theme))
+            const { data } = await getCurrentUserSetting().unwrap()
+            dispatch(setUserSetting(data));
+            if (data?.theme != mode) {
+                setNextTheme(data?.theme)
+                dispatch(setTheme(data?.theme))
             }
-            console.log("🚀 ~ getUserSettings ~ result?.theme:", result?.theme, mode)
+            console.log("🚀 ~ getUserSettings ~ result?.theme:", data?.theme, mode)
 
         } catch (err: any) {
             console.error("🚀 ~ getUserDetails ~ error:", err)

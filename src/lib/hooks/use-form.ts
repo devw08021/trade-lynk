@@ -136,5 +136,6 @@ export function useForm<T extends Record<string, any>>({
     handleBlur,
     handleSubmit,
     reset,
+    setState
   }
 } 

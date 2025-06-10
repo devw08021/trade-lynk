@@ -58,16 +58,12 @@ export default function SettingsPage() {
     onSubmit: async (data) => {
       try {
         const { success: apiStatus, result, message } = await updateUserSetting(data).unwrap();
-        if (apiStatus) {
-          success('Profile updated successfully');
-        }
         if (message) {
           success(`${message}`);
         }
         // TODO: Implement API call
-        console.log('Saving settings:', data);
       } catch (err) {
-        console.error('Failed to update settings');
+        console.error('Failed to update settings', err);
       }
     },
   });

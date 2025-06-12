@@ -4,8 +4,15 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { useAppSelector, useAppDispatch } from '@/store/store';
+
+//user
 import { useGetCurrentUserQuery, useGetCurrentUserSettingQuery } from '@/services/userService';
 import { updateUserProfile, setUserSetting } from '@/store/slices/authSlice';
+
+
+//wallet
+import { useGetAllBalancesQuery } from '@/services/walletService';
+import { fetchBalancesSuccess } from '@/store/slices/walletSlice';
 import { setTheme } from '@/store/slices/themeSlice';
 export default function PageTracker() {
 
@@ -16,6 +23,8 @@ export default function PageTracker() {
     const { isAuthenticated, user } = useAppSelector((state) => state.auth);
     const { mode } = useAppSelector((state) => state.theme);
 
+
+    //user
     const { isLoading, refetch: getCurrentUser } = useGetCurrentUserQuery();
     const { isLoading: isSettingLoading, refetch: getCurrentUserSetting } = useGetCurrentUserSettingQuery();
 
@@ -44,11 +53,28 @@ export default function PageTracker() {
 
         }
     }
+
+    //wallet
+    const { isLoading:walletLoading, refetch: getAllBalances } = useGetAllBalancesQuery();
+
+    const getUserWallet = async (path: string) => {
+        try {
+            const { data } = await getAllBalances().unwrap();
+            if(data?.assets)
+            dispatch(fetchBalancesSuccess(data?.assets));
+
+        } catch (err: any) {
+            console.error("🚀 ~ getUserDetails ~ error:", err)
+
+        }
+    };
+
     useEffect(() => {
         // Call your API on each page navigation
         if (isAuthenticated) {
             getUserDetails(pathname);
             getUserSettings(pathname);
+            getUserWallet(pathname)
         }
 
     }, [pathname]);

@@ -51,7 +51,7 @@ interface SwapQuote {
 export const walletApi = createApi({
   reducerPath: 'walletApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/wallet',
+    baseUrl: `${process.env.NEXT_PUBLIC_WALLET_API_URL}/api/v1/wallets`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
       
@@ -66,7 +66,7 @@ export const walletApi = createApi({
   endpoints: (builder) => ({
     // Balances
     getAllBalances: builder.query<Record<string, Asset>, void>({
-      query: () => '/balances',
+      query: () => '/getWallets',
       providesTags: ['Balances'],
     }),
     

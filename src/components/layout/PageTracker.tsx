@@ -11,8 +11,8 @@ import { updateUserProfile, setUserSetting } from '@/store/slices/authSlice';
 
 
 //wallet
-import { useGetAllBalancesQuery } from '@/services/walletService';
-import { fetchBalancesSuccess } from '@/store/slices/walletSlice';
+import { useGetAllBalancesQuery, useGetCurrencyQuery     } from '@/services/walletService';
+import { fetchBalancesSuccess, fetchCurrency } from '@/store/slices/walletSlice';
 import { setTheme } from '@/store/slices/themeSlice';
 export default function PageTracker() {
 
@@ -55,13 +55,26 @@ export default function PageTracker() {
     }
 
     //wallet
-    const { isLoading:walletLoading, refetch: getAllBalances } = useGetAllBalancesQuery();
+    const { isLoading: walletLoading, refetch: getAllBalances } = useGetAllBalancesQuery();
+    const { isLoading: currencyLoading, refetch: getCurrency } = useGetCurrencyQuery();
 
     const getUserWallet = async (path: string) => {
         try {
             const { data } = await getAllBalances().unwrap();
-            if(data?.assets)
-            dispatch(fetchBalancesSuccess(data?.assets));
+            if (data?.balances)
+                dispatch(fetchBalancesSuccess(data?.balances));
+
+        } catch (err: any) {
+            console.error("🚀 ~ getUserDetails ~ error:", err)
+
+        }
+    };
+
+    const getCurrecyList = async (path: string) => {
+        try {
+            const { data } = await getCurrency().unwrap();
+            if (data)
+                dispatch(fetchCurrency(data));
 
         } catch (err: any) {
             console.error("🚀 ~ getUserDetails ~ error:", err)
@@ -74,7 +87,8 @@ export default function PageTracker() {
         if (isAuthenticated) {
             getUserDetails(pathname);
             getUserSettings(pathname);
-            getUserWallet(pathname)
+            getUserWallet(pathname);
+            getCurrecyList(pathname);
         }
 
     }, [pathname]);

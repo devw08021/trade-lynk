@@ -3,7 +3,7 @@ import { WalletBalance } from '@/types/wallet';
 
 interface CoinSelectorProps {
     balances: WalletBalance[];
-    onCoinSelect: (coin: string) => void;
+    onCoinSelect: () => void;
     title: string;
     subtitle: string;
 }
@@ -16,16 +16,15 @@ export default function CoinSelector({ balances, onCoinSelect, title, subtitle }
                 {balances.map(balance => (
                     <button
                         key={balance.coin}
-                        onClick={() => onCoinSelect(balance.coin)}
+                        onClick={() => onCoinSelect(balance)}
                         className="card-hover p-4 text-center"
-                        disabled={parseFloat(balance.available) === 0}
                     >
                         <div className="w-10 h-10 bg-brand/20 rounded-full flex-center mx-auto mb-2">
                             <span className="text-brand font-bold">{balance.coin[0]}</span>
                         </div>
                         <div className="font-medium text-white mb-1">{balance.coin}</div>
                         <div className="text-xs text-gradient-secondary">
-                            {title === 'Deposit' ? 'Balance' : 'Available'}: {parseFloat(balance.available).toFixed(4)}
+                            {title === 'Deposit' ? 'Balance' : 'Available'}: {parseFloat(balance.funding).toFixed(4)}
                         </div>
                     </button>
                 ))}

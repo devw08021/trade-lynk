@@ -25,8 +25,9 @@ export interface Transaction {
 }
 
 export interface WalletState {
-  assets: Record<string, Asset>;
+  balances: string[];
   selectedAsset: string | null;
+  currency: string[];
   transactions: Transaction[];
   depositAddress: Record<string, string>;
   isLoading: boolean;
@@ -37,8 +38,9 @@ export interface WalletState {
 }
 
 const initialState: WalletState = {
-  assets: {},
+  balances: [],
   selectedAsset: null,
+  currency: [],
   transactions: [],
   depositAddress: {},
   isLoading: false,
@@ -58,11 +60,14 @@ const walletSlice = createSlice({
     },
     fetchBalancesSuccess: (state, action: PayloadAction<Record<string, Asset>>) => {
       state.isLoading = false;
-      state.assets = action.payload;
-      
+      state.balances = action.payload;
+
       if (!state.selectedAsset && Object.keys(action.payload).length > 0) {
         state.selectedAsset = Object.keys(action.payload)[0];
       }
+    },
+    fetchCurrency: (state, action: PayloadAction<any>) => {
+      state.currency = action.payload;
     },
     fetchBalancesFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -105,6 +110,7 @@ const walletSlice = createSlice({
 export const {
   fetchBalancesStart,
   fetchBalancesSuccess,
+  fetchCurrency,
   fetchBalancesFailure,
   fetchTransactionsStart,
   fetchTransactionsSuccess,

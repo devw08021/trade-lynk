@@ -8,9 +8,11 @@ interface DepositAddressResponse {
 }
 
 interface WithdrawRequest {
-  asset: string;
+  coin: string;
+  coinId: string;
   address: string;
   amount: string;
+  twoFa: string;
   memo?: string;
   network?: string;
 }
@@ -26,10 +28,11 @@ interface WithdrawResponse {
 }
 
 interface TransferRequest {
-  asset: string;
+  coin: string;
+  coinId: string;
   amount: string;
-  fromAccount: 'spot' | 'funding' | 'p2p' | 'futures';
-  toAccount: 'spot' | 'funding' | 'p2p' | 'futures';
+  fromWallet: 'spot' | 'funding' | 'p2p' | 'futures';
+  toWallet: 'spot' | 'funding' | 'p2p' | 'futures';
 }
 
 interface SwapRequest {
@@ -54,27 +57,33 @@ export const walletApi = createApi({
     baseUrl: `${process.env.NEXT_PUBLIC_WALLET_API_URL}/api/v1/wallets`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
-      
+
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
-      
+
       return headers;
     },
   }),
-  tagTypes: ['Balances', 'Deposits', 'Withdrawals', 'Transactions'],
+  tagTypes: ['Currency', 'Balances', 'Deposits', 'Withdrawals', 'Transactions'],
+
   endpoints: (builder) => ({
+
+    getCurrency: builder.query<Record<string, any>, void>({
+      query: () => '/getCurrency',
+      providesTags: ['Currency'],
+    }),
     // Balances
     getAllBalances: builder.query<Record<string, Asset>, void>({
       query: () => '/getWallets',
       providesTags: ['Balances'],
     }),
-    
+
     getAssetBalance: builder.query<Asset, string>({
       query: (asset) => `/balance?asset=${asset}`,
       providesTags: (result, error, asset) => [{ type: 'Balances', id: asset }],
     }),
-    
+
     // Deposits
     getDepositAddress: builder.query<DepositAddressResponse, { asset: string; network?: string }>({
       query: ({ asset, network }) => {
@@ -85,11 +94,11 @@ export const walletApi = createApi({
         return url;
       },
     }),
-    
+
     getNetworks: builder.query<{ asset: string; networks: string[] }[], string>({
       query: (asset) => `/networks?asset=${asset}`,
     }),
-    
+
     getDepositHistory: builder.query<Transaction[], { asset?: string; status?: string; limit?: number; page?: number }>({
       query: ({ asset, status, limit = 50, page = 1 }) => {
         let url = `/deposit-history?limit=${limit}&page=${page}`;
@@ -99,9 +108,9 @@ export const walletApi = createApi({
       },
       providesTags: ['Deposits', 'Transactions'],
     }),
-    
+
     // Withdrawals
-    withdraw: builder.mutation<WithdrawResponse, WithdrawRequest>({
+    withdraw: builder.mutation<any, WithdrawRequest>({
       query: (body) => ({
         url: '/withdraw',
         method: 'POST',
@@ -109,7 +118,7 @@ export const walletApi = createApi({
       }),
       invalidatesTags: ['Balances', 'Withdrawals', 'Transactions'],
     }),
-    
+
     getWithdrawalHistory: builder.query<Transaction[], { asset?: string; status?: string; limit?: number; page?: number }>({
       query: ({ asset, status, limit = 50, page = 1 }) => {
         let url = `/withdrawal-history?limit=${limit}&page=${page}`;
@@ -119,9 +128,9 @@ export const walletApi = createApi({
       },
       providesTags: ['Withdrawals', 'Transactions'],
     }),
-    
+
     // Transfers
-    transfer: builder.mutation<{ success: boolean; id: string }, TransferRequest>({
+    transfer: builder.mutation<any, TransferRequest>({
       query: (body) => ({
         url: '/transfer',
         method: 'POST',
@@ -129,18 +138,18 @@ export const walletApi = createApi({
       }),
       invalidatesTags: ['Balances', 'Transactions'],
     }),
-    
+
     getTransferHistory: builder.query<Transaction[], { limit?: number; page?: number }>({
       query: ({ limit = 50, page = 1 }) => `/transfer-history?limit=${limit}&page=${page}`,
       providesTags: ['Transactions'],
     }),
-    
+
     // Swaps
     getSwapQuote: builder.query<SwapQuote, { fromAsset: string; toAsset: string; amount: string }>({
-      query: ({ fromAsset, toAsset, amount }) => 
+      query: ({ fromAsset, toAsset, amount }) =>
         `/swap/quote?fromAsset=${fromAsset}&toAsset=${toAsset}&amount=${amount}`,
     }),
-    
+
     executeSwap: builder.mutation<{ success: boolean; id: string }, SwapRequest>({
       query: (body) => ({
         url: '/swap',
@@ -149,7 +158,7 @@ export const walletApi = createApi({
       }),
       invalidatesTags: ['Balances', 'Transactions'],
     }),
-    
+
     // Transaction History
     getTransactionHistory: builder.query<
       Transaction[],
@@ -165,7 +174,7 @@ export const walletApi = createApi({
       },
       providesTags: ['Transactions'],
     }),
-    
+
     // Wallet Connect
     getAvailableWallets: builder.query<string[], void>({
       query: () => '/available-wallets',
@@ -175,6 +184,7 @@ export const walletApi = createApi({
 
 export const {
   useGetAllBalancesQuery,
+  useGetCurrencyQuery,
   useGetAssetBalanceQuery,
   useGetDepositAddressQuery,
   useGetNetworksQuery,

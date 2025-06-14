@@ -3,17 +3,21 @@ import { WalletBalance } from '@/types/wallet';
 
 interface BalancesTableProps {
     balances: WalletBalance[];
+    walletType: string;
     totalUsdValue: number;
-    onDeposit: (coin: string) => void;
-    onWithdraw: (coin: string) => void;
+    onDeposit: () => void;
+    onWithdraw: () => void;
+    onTransfer: () => void;
     searchQuery: string;
 }
 
 export default function BalancesTable({
     balances,
+    walletType,
     totalUsdValue,
     onDeposit,
     onWithdraw,
+    onTransfer,
     searchQuery
 }: BalancesTableProps) {
     return (
@@ -58,24 +62,55 @@ export default function BalancesTable({
                                         ${parseFloat(balance.usdValue).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </div>
                                     <div className="text-xs text-gradient-secondary">
-                                        {((parseFloat(balance.usdValue) / totalUsdValue) * 100).toFixed(1)}% of portfolio
+                                        {((parseFloat(balance?.usdValue) / totalUsdValue) * 100 || 0).toFixed(1)}% of portfolio
                                     </div>
                                 </td>
                                 <td className="table-cell text-right">
-                                    <div className="flex justify-end space-x-2">
-                                        <button
-                                            onClick={() => onDeposit(balance.coin)}
-                                            className="btn-ghost text-xs"
-                                        >
-                                            Deposit
-                                        </button>
-                                        <button
-                                            onClick={() => onWithdraw(balance.coin)}
-                                            className="btn-ghost text-xs"
-                                        >
-                                            Withdraw
-                                        </button>
-                                    </div>
+                                    {
+                                        walletType == "funding" ?
+                                            < div className="flex justify-end space-x-2">
+                                                <button
+                                                    onClick={() => onDeposit(balance)}
+                                                    className="btn-ghost text-xs"
+                                                >
+                                                    Deposit
+                                                </button>
+                                                <button
+                                                    onClick={() => onWithdraw(balance)}
+                                                    className="btn-ghost text-xs"
+                                                >
+                                                    Withdraw
+                                                </button>
+                                                <button
+                                                    onClick={() => onTransfer(balance)}
+                                                    className="btn-ghost text-xs"
+                                                >
+                                                    Transfer
+                                                </button>
+                                            </div>
+                                            :
+                                            walletType == "all" ?
+                                                < div className="flex justify-end space-x-2">
+                                                    <button
+                                                        onClick={() => onDeposit(balance)}
+                                                        className="btn-ghost text-xs"
+                                                        disabled
+                                                    >
+                                                        Info
+                                                    </button>
+                                                </div>
+                                                :
+                                                < div className="flex justify-end space-x-2">
+                                                    <button
+                                                        onClick={() => onTransfer(balance)}
+                                                        className="btn-ghost text-xs"
+                                                    >
+                                                        Transfer
+                                                    </button>
+
+                                                </div>
+                                    }
+
                                 </td>
                             </tr>
                         ))
@@ -88,6 +123,6 @@ export default function BalancesTable({
                     )}
                 </tbody>
             </table>
-        </div>
+        </div >
     );
 }

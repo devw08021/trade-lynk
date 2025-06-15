@@ -85,14 +85,12 @@ export const walletApi = createApi({
     }),
 
     // Deposits
-    getDepositAddress: builder.query<DepositAddressResponse, { asset: string; network?: string }>({
-      query: ({ asset, network }) => {
-        let url = `/deposit-address?asset=${asset}`;
-        if (network) {
-          url += `&network=${network}`;
-        }
-        return url;
-      },
+    getDepositAddress: builder.mutation<any, any>({
+       query: (body) => ({
+        url: '/getDepositAddress',
+        method: 'POST',
+        body,
+      }),
     }),
 
     getNetworks: builder.query<{ asset: string; networks: string[] }[], string>({
@@ -186,7 +184,7 @@ export const {
   useGetAllBalancesQuery,
   useGetCurrencyQuery,
   useGetAssetBalanceQuery,
-  useGetDepositAddressQuery,
+  useGetDepositAddressMutation,
   useGetNetworksQuery,
   useGetDepositHistoryQuery,
   useWithdrawMutation,

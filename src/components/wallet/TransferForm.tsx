@@ -245,7 +245,7 @@ export default function TransferForm({
                     {loader ? (
                         <div className="flex items-center justify-center">
                             <div className="loading-spinner mr-2"></div>
-                            Processing Withdrawal...
+                            Processing Transfer...
                         </div>
                     ) : (
                         `Transfer`

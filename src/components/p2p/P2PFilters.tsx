@@ -3,8 +3,7 @@
 import React from 'react';
 
 interface P2PFiltersProps {
-  availableAssets: string[];
-  availableFiatCurrencies: string[];
+  pair: string[];
   paymentMethods: string[];
   selectedAsset: string;
   selectedFiatCurrency: string;
@@ -16,8 +15,7 @@ interface P2PFiltersProps {
 }
 
 export default function P2PFilters({
-  availableAssets,
-  availableFiatCurrencies,
+  pair,
   paymentMethods,
   selectedAsset,
   selectedFiatCurrency,
@@ -39,14 +37,18 @@ export default function P2PFilters({
           onChange={(e) => onAssetChange(e.target.value)}
           className="form-select"
         >
-          {availableAssets.map((asset) => (
-            <option key={asset} value={asset}>
-              {asset}
+          <option value="">All cryptocurrencies</option>
+          {Array.from(new Map(
+            pair.map((currency) => [currency.firstCoin, currency])
+          ).values()).map((currency) => (
+            <option key={currency.firstCoinId} value={currency.firstCoinId}>
+              {currency.firstCoin}
             </option>
           ))}
+
         </select>
       </div>
-      
+
       <div className="flex flex-col flex-1">
         <label htmlFor="fiatCurrency" className="block text-sm font-medium text-white mb-2">
           Fiat Currency
@@ -57,14 +59,18 @@ export default function P2PFilters({
           onChange={(e) => onFiatCurrencyChange(e.target.value)}
           className="form-select"
         >
-          {availableFiatCurrencies.map((currency) => (
-            <option key={currency} value={currency}>
-              {currency}
+          <option value="">All fiat currencies</option>
+          {Array.from(new Map(
+            pair.map((currency) => [currency.secondCoin, currency])
+          ).values()).map((currency) => (
+            <option key={currency.secondCoinId} value={currency.secondCoinId}>
+              {currency.secondCoin}
             </option>
           ))}
+
         </select>
       </div>
-      
+
       <div className="flex flex-col flex-1">
         <label htmlFor="paymentMethod" className="block text-sm font-medium text-white mb-2">
           Payment Method
@@ -85,7 +91,7 @@ export default function P2PFilters({
         </select>
         {isLoadingPaymentMethods && (
           <div className="mt-1 flex items-center">
-            <div className="loading-spinner mr-2" style={{width: '12px', height: '12px'}}></div>
+            <div className="loading-spinner mr-2" style={{ width: '12px', height: '12px' }}></div>
             <span className="text-xs text-gradient-secondary">Loading payment methods...</span>
           </div>
         )}

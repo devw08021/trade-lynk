@@ -90,50 +90,57 @@ interface FeedbackRequest {
 export const p2pApi = createApi({
   reducerPath: 'p2pApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/p2p',
+    baseUrl: `${process.env.NEXT_PUBLIC_P2P_API_URL}/api/v1/p2p`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
-      
+
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
-      
+
       return headers;
     },
   }),
   tagTypes: ['Offers', 'MyOffers', 'Trades', 'Messages', 'Feedback'],
   endpoints: (builder) => ({
     searchOffers: builder.query<
-      P2POffer[], 
-      { 
+      P2POffer[],
+      {
         type: 'buy' | 'sell',
-        asset?: string,
-        fiatCurrency?: string,
+        userId?: string,
+        crypto?: string,
+        fiat?: string,
         paymentMethod?: string,
         page?: number,
         limit?: number
       }
     >({
-      query: ({ type, asset, fiatCurrency, paymentMethod, page = 1, limit = 20 }) => {
+      query: ({ type, crypto, fiat, paymentMethod, page = 0, limit = 5, userId }) => {
         let url = `/offers?type=${type}&page=${page}&limit=${limit}`;
-        if (asset) url += `&asset=${asset}`;
-        if (fiatCurrency) url += `&fiatCurrency=${fiatCurrency}`;
+        if (crypto) url += `&crypto=${crypto}`;
+        if (fiat) url += `&fiat=${fiat}`;
         if (paymentMethod) url += `&paymentMethod=${paymentMethod}`;
+        if (userId) url += `&userId=${userId}`;
         return url;
       },
       providesTags: ['Offers'],
     }),
-    
+
+    getPairList: builder.query<Record<string, any>, void>({
+      query: () => `/getPairs`,
+      providesTags: ['Offers'],
+    }),
+
     getOfferById: builder.query<P2POffer, string>({
       query: (id) => `/offer/${id}`,
       providesTags: (result, error, id) => [{ type: 'Offers', id }],
     }),
-    
+
     getMyOffers: builder.query<P2POffer[], void>({
       query: () => '/my-offers',
       providesTags: ['MyOffers'],
     }),
-    
+
     createOffer: builder.mutation<P2POffer, CreateOfferRequest>({
       query: (offer) => ({
         url: '/offer',
@@ -142,7 +149,7 @@ export const p2pApi = createApi({
       }),
       invalidatesTags: ['MyOffers', 'Offers'],
     }),
-    
+
     updateOffer: builder.mutation<P2POffer, { id: string; update: Partial<CreateOfferRequest> }>({
       query: ({ id, update }) => ({
         url: `/offer/${id}`,
@@ -155,7 +162,7 @@ export const p2pApi = createApi({
         { type: 'Offers', id },
       ],
     }),
-    
+
     deleteOffer: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
         url: `/offer/${id}`,
@@ -163,7 +170,7 @@ export const p2pApi = createApi({
       }),
       invalidatesTags: ['MyOffers', 'Offers'],
     }),
-    
+
     getMyTrades: builder.query<P2PTrade[], { status?: P2PTrade['status'], page?: number, limit?: number }>({
       query: ({ status, page = 1, limit = 20 }) => {
         let url = `/trades?page=${page}&limit=${limit}`;
@@ -172,12 +179,12 @@ export const p2pApi = createApi({
       },
       providesTags: ['Trades'],
     }),
-    
+
     getTrade: builder.query<P2PTrade, string>({
       query: (id) => `/trade/${id}`,
       providesTags: (result, error, id) => [{ type: 'Trades', id }],
     }),
-    
+
     createTrade: builder.mutation<P2PTrade, CreateTradeRequest>({
       query: (trade) => ({
         url: '/trade',
@@ -186,7 +193,7 @@ export const p2pApi = createApi({
       }),
       invalidatesTags: ['Trades', 'Offers'],
     }),
-    
+
     updateTradeStatus: builder.mutation<P2PTrade, { id: string; status: P2PTrade['status'] }>({
       query: ({ id, status }) => ({
         url: `/trade/${id}/status`,
@@ -195,12 +202,12 @@ export const p2pApi = createApi({
       }),
       invalidatesTags: (result, error, { id }) => ['Trades', { type: 'Trades', id }],
     }),
-    
+
     getTradeMessages: builder.query<P2PTradeMessage[], { tradeId: string; page?: number; limit?: number }>({
       query: ({ tradeId, page = 1, limit = 50 }) => `/trade/${tradeId}/messages?page=${page}&limit=${limit}`,
       providesTags: (result, error, { tradeId }) => [{ type: 'Messages', id: tradeId }],
     }),
-    
+
     sendMessage: builder.mutation<P2PTradeMessage, SendMessageRequest>({
       query: ({ tradeId, message, attachment }) => {
         const formData = new FormData();
@@ -208,7 +215,7 @@ export const p2pApi = createApi({
         if (attachment) {
           formData.append('attachment', attachment);
         }
-        
+
         return {
           url: `/trade/${tradeId}/message`,
           method: 'POST',
@@ -217,7 +224,7 @@ export const p2pApi = createApi({
       },
       invalidatesTags: (result, error, { tradeId }) => [{ type: 'Messages', id: tradeId }],
     }),
-    
+
     leaveFeedback: builder.mutation<{ success: boolean }, FeedbackRequest>({
       query: (feedback) => ({
         url: '/feedback',
@@ -226,7 +233,7 @@ export const p2pApi = createApi({
       }),
       invalidatesTags: ['Feedback'],
     }),
-    
+
     getPaymentMethods: builder.query<string[], void>({
       query: () => '/payment-methods',
     }),
@@ -234,6 +241,7 @@ export const p2pApi = createApi({
 });
 
 export const {
+  useGetPairListQuery,
   useSearchOffersQuery,
   useGetOfferByIdQuery,
   useGetMyOffersQuery,

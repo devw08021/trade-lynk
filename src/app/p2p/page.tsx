@@ -1,14 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tab } from '@headlessui/react';
-import { useSearchOffersQuery, useGetPaymentMethodsQuery } from '@/services/p2pService';
+import { useSearchOffersQuery, useGetPaymentMethodsQuery, useGetPairListQuery } from '@/services/p2pService';
 import { useAppSelector } from '@/store/store';
 import P2POfferList from '@/components/p2p/P2POfferList';
 import P2PFilters from '@/components/p2p/P2PFilters';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Link from 'next/link';
 import { PlusIcon } from '@heroicons/react/24/outline';
+
+// mode
+import CreateAddForm from '@/components/p2p/createAdd';
+import CreateOrderForm from '@/components/p2p/createOrder';
 
 const STATIC_P2P_DATA = {
   paymentMethods: [
@@ -210,33 +214,53 @@ const STATIC_P2P_DATA = {
 
 export default function P2PPage() {
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
-  const [selectedAsset, setSelectedAsset] = useState('BTC');
-  const [selectedFiatCurrency, setSelectedFiatCurrency] = useState('USD');
+  const [pair, setPairs] = useState<any>([]);
+  const [page, setPage] = useState(0)
+  const [offersList, setOffersList] = useState<any>([]);
+  const [offersCount, setOffersCount] = useState(0)
+  const [trade, setTrade] = useState<any>({})
+  const [selectedAsset, setSelectedAsset] = useState('');
+  const [selectedFiatCurrency, setSelectedFiatCurrency] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+
+  // models
+  const [isCreateAdd, setCreateAdd] = useState(false);
+
+  const onBack = () => {
+    setCreateAdd(false);
+    setTrade({});
+  }
 
   const { data: offers, isLoading: isLoadingOffers, isError: isOffersError } = useSearchOffersQuery({
+    userId: user?._id,
     type: tradeType,
-    asset: selectedAsset,
-    fiatCurrency: selectedFiatCurrency,
+    crypto: selectedAsset,
+    fiat: selectedFiatCurrency,
     paymentMethod: selectedPaymentMethod || undefined,
+    page: page,
+    limit: 20,
   });
 
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods, isError: isPaymentMethodsError } = useGetPaymentMethodsQuery();
-  
-  const effectivePaymentMethods = isPaymentMethodsError || !paymentMethods ? STATIC_P2P_DATA.paymentMethods : paymentMethods;
-  
-  const filteredStaticOffers = STATIC_P2P_DATA.offers[tradeType].filter(offer => 
-    offer.asset === selectedAsset && 
-    offer.fiatCurrency === selectedFiatCurrency && 
-    (!selectedPaymentMethod || offer.paymentMethods.includes(selectedPaymentMethod))
-  );
-  
-  const effectiveOffers = isOffersError || !offers ? filteredStaticOffers : offers;
+  const { data: pairAPIData, isLoading: isPairLoading, isError: isPairError } = useGetPairListQuery();
+  useEffect(() => {
+    if (pairAPIData?.data?.data) {
+      setPairs(pairAPIData?.data?.data);
+    }
+  }, [pairAPIData])
 
-  const availableAssets = ['BTC', 'ETH', 'USDT', 'SOL', 'ADA', 'DOT'];
-  
-  const availableFiatCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CNY', 'INR'];
+  useEffect(() => {
+    if (offers?.success) {
+      setOffersList(offers?.data?.data)
+      setOffersCount(offers?.data?.count)
+    }
+  }, [offers])
+
+
+  const effectivePaymentMethods = isPaymentMethodsError || !paymentMethods ? STATIC_P2P_DATA.paymentMethods : paymentMethods;
+
+
 
   return (
     <div className="page-wrapper">
@@ -248,9 +272,9 @@ export default function P2PPage() {
               Buy and sell crypto directly with other users using your preferred payment methods
             </p>
           </div>
-          
+
           {isAuthenticated && (
-            <Link href="/p2p/create-offer" className="btn-primary flex items-center">
+            <Link href="#" className="btn-primary flex items-center" onClick={() => setCreateAdd(true)}>
               <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
               Create Offer
             </Link>
@@ -277,12 +301,11 @@ export default function P2PPage() {
                 Sell Crypto
               </Tab>
             </Tab.List>
-            
+
             <Tab.Panels>
               <Tab.Panel className="tab-content">
                 <P2PFilters
-                  availableAssets={availableAssets}
-                  availableFiatCurrencies={availableFiatCurrencies}
+                  pair={pair}
                   paymentMethods={effectivePaymentMethods}
                   selectedAsset={selectedAsset}
                   selectedFiatCurrency={selectedFiatCurrency}
@@ -292,13 +315,13 @@ export default function P2PPage() {
                   onPaymentMethodChange={setSelectedPaymentMethod}
                   isLoadingPaymentMethods={isLoadingPaymentMethods && !effectivePaymentMethods}
                 />
-                
-                {isLoadingOffers && !effectiveOffers ? (
+
+                {isLoadingOffers && !offersList ? (
                   <div className="flex-center py-12">
                     <LoadingSpinner size="lg" />
                   </div>
-                ) : effectiveOffers && effectiveOffers.length > 0 ? (
-                  <P2POfferList offers={effectiveOffers} tradeType={tradeType} />
+                ) : offersList && offersList.length > 0 ? (
+                  <P2POfferList offers={offersList} tradeType={tradeType} offersCount={offersCount} page={page} setPage={setPage} setTrade={setTrade} />
                 ) : (
                   <div className="text-center py-12">
                     <p className="text-gradient-secondary mb-4">
@@ -312,11 +335,10 @@ export default function P2PPage() {
                   </div>
                 )}
               </Tab.Panel>
-              
+
               <Tab.Panel className="tab-content">
                 <P2PFilters
-                  availableAssets={availableAssets}
-                  availableFiatCurrencies={availableFiatCurrencies}
+                  pair={pair}
                   paymentMethods={effectivePaymentMethods}
                   selectedAsset={selectedAsset}
                   selectedFiatCurrency={selectedFiatCurrency}
@@ -326,13 +348,13 @@ export default function P2PPage() {
                   onPaymentMethodChange={setSelectedPaymentMethod}
                   isLoadingPaymentMethods={isLoadingPaymentMethods && !effectivePaymentMethods}
                 />
-                
-                {isLoadingOffers && !effectiveOffers ? (
+
+                {isLoadingOffers && !offersList ? (
                   <div className="flex-center py-12">
                     <LoadingSpinner size="lg" />
                   </div>
-                ) : effectiveOffers && effectiveOffers.length > 0 ? (
-                  <P2POfferList offers={effectiveOffers} tradeType={tradeType} />
+                ) : offersList && offersList.length > 0 ? (
+                  <P2POfferList offers={offersList} tradeType={tradeType} offersCount={offersCount} page={page} setPage={setPage} setTrade={setTrade} />
                 ) : (
                   <div className="text-center py-12">
                     <p className="text-gradient-secondary mb-4">
@@ -349,12 +371,12 @@ export default function P2PPage() {
             </Tab.Panels>
           </Tab.Group>
         </div>
-        
+
         {/* How P2P Trading Works */}
         <div className="mt-12">
           <div className="card">
             <h2 className="heading-tertiary text-gradient-muted mb-8 text-center">How P2P Trading Works</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="flex flex-col items-center text-center">
                 <div className="icon-container mb-6">
@@ -365,7 +387,7 @@ export default function P2PPage() {
                   Browse available offers from other users or create your own offer with your preferred payment methods.
                 </p>
               </div>
-              
+
               <div className="flex flex-col items-center text-center">
                 <div className="icon-container mb-6">
                   <span className="text-2xl font-bold text-black">2</span>
@@ -375,7 +397,7 @@ export default function P2PPage() {
                   Our escrow system holds the crypto until the payment is confirmed, ensuring safe and secure transactions.
                 </p>
               </div>
-              
+
               <div className="flex flex-col items-center text-center">
                 <div className="icon-container mb-6">
                   <span className="text-2xl font-bold text-black">3</span>
@@ -443,6 +465,16 @@ export default function P2PPage() {
           </div>
         </div>
       </div>
+
+      <CreateAddForm
+        isCreateAdd={isCreateAdd}
+        onBack={onBack}
+        pair={pair}
+      />
+      <CreateOrderForm
+        trade={trade}
+        onBack={onBack}
+      />
     </div>
   );
 }

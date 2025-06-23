@@ -1,50 +1,60 @@
 'use client';
 
-import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState, useEffect } from 'react';
+import { Tab } from '@headlessui/react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { FileDown } from 'lucide-react';
+import HistoryFilter from '@/components/p2p/historyFilter'
+import TradeHistoryTable from '@/components/p2p/TradeHistoryTable';
+import AdHistoryTable from '@/components/p2p/AdHistoryTable'; // create this like HistoryTable
 import { DatePickerWithRange } from '@/components/ui/date-picker-with-range';
-import { FileDown, User, ArrowRight } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-type P2PTrade = {
-  id: string;
-  date: string;
-  type: 'Buy' | 'Sell';
-  asset: string;
-  amount: string;
-  price: string;
-  counterparty: {
-    name: string;
-    avatar: string;
-  };
-  status: 'Completed' | 'Pending' | 'Canceled';
-};
+import { useGetPairListQuery } from '@/services/p2pService';
 
-const p2pHistory: P2PTrade[] = [
-  { id: 'ORD-001', date: '2023-11-10 10:45', type: 'Buy', asset: 'USDT', amount: '1,000 USDT', price: '1.00 USD', counterparty: { name: 'CryptoKing', avatar: '/avatars/01.png' }, status: 'Completed' },
-  { id: 'ORD-002', date: '2023-11-09 18:20', type: 'Sell', asset: 'BTC', amount: '0.05 BTC', price: '68,000 USD', counterparty: { name: 'TraderJane', avatar: '/avatars/02.png' }, status: 'Completed' },
-  { id: 'ORD-003', date: '2023-11-09 11:00', type: 'Buy', asset: 'ETH', amount: '1.5 ETH', price: '3,850 USD', counterparty: { name: 'SatoshiJr', avatar: '/avatars/03.png' }, status: 'Pending' },
-  { id: 'ORD-004', date: '2023-11-08 22:15', type: 'Sell', asset: 'USDT', amount: '5,000 USDT', price: '1.01 USD', counterparty: { name: 'CryptoWhale', avatar: '/avatars/04.png' }, status: 'Canceled' },
-];
+
+const TABS = ['My Trades', 'My Ads'];
+
+const mockTradeHistory = [/* ... your P2PTrade[] data */];
+const mockAdHistory = [/* ... your Ad history data */];
+
+const availablePaymentMethods = ["PayPal", "Bank Transfer", "Revolut"]
 
 export default function P2PHistoryPage() {
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | null>(null);
+
+  const [filters, setFilters] = useState({
+    tradeType: "all",            // "buy" or "sell"
+    asset: "",                   // firstCoinId
+    fiat: "",                    // secondCoinId
+    paymentMethod: "",           // selected payment method
+  });
+
+  const [offers, setOffers] = useState([]);           // Offers fetched or filtered
+  const [offersCount, setOffersCount] = useState(0);  // For pagination
+  const [page, setPage] = useState(1);                // Current page
+
+
+  const [pair, setPairs] = useState<any>([]);
+
+
+  const { data: pairAPIData, isLoading: isPairLoading, isError: isPairError } = useGetPairListQuery();
+  useEffect(() => {
+    if (pairAPIData?.data?.data) {
+      setPairs(pairAPIData?.data?.data);
+    }
+  }, [pairAPIData])
+
+  const onTabChange = (index: number) => {
+    setSelectedTabIndex(index);
+  }
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">P2P History</h1>
         <div className="flex items-center gap-4">
-          <DatePickerWithRange />
+          {/* <DatePickerWithRange onChange={setDateRange} /> */}
           <Button variant="outline">
             <FileDown className="h-4 w-4 mr-2" />
             Export
@@ -54,58 +64,62 @@ export default function P2PHistoryPage() {
 
       <Card>
         <CardContent className="pt-6">
-            <HistoryTable data={p2pHistory} />
+          <Tab.Group selectedIndex={selectedTabIndex} onChange={onTabChange}>
+            <Tab.List className="tab-list">
+              <Tab
+                className={({ selected }) =>
+                  `tab-button ${selected ? 'tab-button-active' : ''}`
+                }
+              >
+                My Ads
+              </Tab>
+              <Tab
+                className={({ selected }) =>
+                  `tab-button ${selected ? 'tab-button-active' : ''}`
+                }
+              >
+                My Trades
+              </Tab>
+            </Tab.List>
+
+            <Tab.Panels>
+              <Tab.Panel>
+                <HistoryFilter
+                  pair={pair}
+                  paymentMethods={availablePaymentMethods}
+                  onAssetChange={(value) => setFilters((prev) => ({ ...prev, asset: value }))}
+                  onFiatCurrencyChange={(value) => setFilters((prev) => ({ ...prev, fiat: value }))}
+                  onPaymentMethodChange={(value) => setFilters((prev) => ({ ...prev, paymentMethod: value }))}
+                  onTradeTypeChange={(value) => setFilters((prev) => ({ ...prev, tradeType: value }))}
+                />
+                <AdHistoryTable
+                  side={filters?.tradeType}
+                  crypto={filters?.asset}
+                  fiat={filters?.fiat}
+                  paymentMethod={filters?.paymentMethod}
+                />
+
+              </Tab.Panel>
+              <Tab.Panel>
+                <HistoryFilter pair={pair}
+                  paymentMethods={availablePaymentMethods}
+                  onAssetChange={(value) => setFilters((prev) => ({ ...prev, asset: value }))}
+                  onFiatCurrencyChange={(value) => setFilters((prev) => ({ ...prev, fiat: value }))}
+                  onPaymentMethodChange={(value) => setFilters((prev) => ({ ...prev, paymentMethod: value }))}
+                  onTradeTypeChange={(value) => setFilters((prev) => ({ ...prev, tradeType: value }))}
+                />
+
+                <TradeHistoryTable
+                  side={filters?.tradeType}
+                  crypto={filters?.asset}
+                  fiat={filters?.fiat}
+                  paymentMethod={filters?.paymentMethod}
+                />
+              </Tab.Panel>
+            </Tab.Panels>
+          </Tab.Group>
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }
-
-const HistoryTable = ({ data }: { data: P2PTrade[] }) => (
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead>Order ID</TableHead>
-        <TableHead>Date</TableHead>
-        <TableHead>Type</TableHead>
-        <TableHead>Asset</TableHead>
-        <TableHead>Amount</TableHead>
-        <TableHead>Price</TableHead>
-        <TableHead>Counterparty</TableHead>
-        <TableHead className="text-right">Status</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {data.map((item) => (
-        <TableRow key={item.id}>
-          <TableCell className="font-mono text-xs">{item.id}</TableCell>
-          <TableCell>{item.date}</TableCell>
-          <TableCell>
-            <span className={item.type === 'Buy' ? 'text-green-500' : 'text-red-500'}>{item.type}</span>
-          </TableCell>
-          <TableCell>{item.asset}</TableCell>
-          <TableCell>{item.amount}</TableCell>
-          <TableCell>{item.price}</TableCell>
-          <TableCell>
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={item.counterparty.avatar} />
-                <AvatarFallback>{item.counterparty.name[0]}</AvatarFallback>
-              </Avatar>
-              <span>{item.counterparty.name}</span>
-            </div>
-          </TableCell>
-          <TableCell className="text-right">
-            <Badge variant={
-              item.status === 'Completed' ? 'default'
-              : item.status === 'Pending' ? 'secondary'
-              : 'destructive'
-            }>
-              {item.status}
-            </Badge>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-); 

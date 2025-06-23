@@ -70,7 +70,7 @@ export default function CreateOrderForm({
     <Modal
       isOpen={Object(trade).hasOwnProperty("_id")}
       onClose={onCloseModal}
-      title={`${trade?.side === "buy" ? "Buy" : "Sell"} ${trade?.firstCoin}`}
+      title={`${trade?.side === "buy" ? "Sell" : "Buy"} ${trade?.firstCoin}`}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -123,7 +123,7 @@ export default function CreateOrderForm({
         >
           {loading
             ? "Placing Order..."
-            : `${trade?.side === "buy" ? "Buy" : "Sell"} ${trade?.firstCoin}`}
+            : `${trade?.side === "buy" ? "Sell" : "Buy"} ${trade?.firstCoin}`}
         </button>
       </form>
     </Modal>

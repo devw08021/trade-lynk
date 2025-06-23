@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Tab } from '@headlessui/react';
 import { useSearchOffersQuery, useGetPaymentMethodsQuery, useGetPairListQuery } from '@/services/p2pService';
 import { useAppSelector } from '@/store/store';
@@ -274,10 +274,17 @@ export default function P2PPage() {
           </div>
 
           {isAuthenticated && (
-            <Link href="#" className="btn-primary flex items-center" onClick={() => setCreateAdd(true)}>
-              <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-              Create Offer
-            </Link>
+            <div className="flex gap-4">
+              <Link href="#" className="btn-primary flex items-center" onClick={() => setCreateAdd(true)}>
+                <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                Create Offer
+              </Link>
+              <Link href="/p2p/history" className="btn-primary flex items-center">
+                <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                History
+              </Link>
+            </div>
+
           )}
         </div>
 

@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { AsyncThunkPayloadCreator } from "@reduxjs/toolkit";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 interface P2POffer {
   id: string;
@@ -9,7 +10,7 @@ interface P2POffer {
     positiveRating: number;
     accountCreationDate: string;
   };
-  type: 'buy' | 'sell';
+  type: "buy" | "sell";
   asset: string;
   fiatCurrency: string;
   price: string;
@@ -19,7 +20,7 @@ interface P2POffer {
   paymentMethods: string[];
   terms: string;
   autoReply?: string;
-  status: 'active' | 'inactive' | 'completed';
+  status: "active" | "inactive" | "completed";
   createdAt: string;
   updatedAt: string;
 }
@@ -38,7 +39,13 @@ interface P2PTrade {
   amount: string;
   fiatAmount: string;
   price: string;
-  status: 'pending_payment' | 'payment_sent' | 'payment_confirmed' | 'completed' | 'cancelled' | 'disputed';
+  status:
+    | "pending_payment"
+    | "payment_sent"
+    | "payment_confirmed"
+    | "completed"
+    | "cancelled"
+    | "disputed";
   paymentMethod: string;
   messageCount: number;
   createdAt: string;
@@ -57,7 +64,7 @@ interface P2PTradeMessage {
 }
 
 interface CreateOfferRequest {
-  type: 'buy' | 'sell';
+  type: "buy" | "sell";
   asset: string;
   fiatCurrency: string;
   price: string;
@@ -83,39 +90,47 @@ interface SendMessageRequest {
 
 interface FeedbackRequest {
   tradeId: string;
-  rating: 'positive' | 'negative';
+  rating: "positive" | "negative";
   comment?: string;
 }
 
 export const p2pApi = createApi({
-  reducerPath: 'p2pApi',
+  reducerPath: "p2pApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_P2P_API_URL}/api/v1/p2p`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
 
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set("authorization", `Bearer ${token}`);
       }
 
       return headers;
     },
   }),
-  tagTypes: ['Offers', 'MyOffers', 'Trades', 'Messages', 'Feedback'],
+  tagTypes: ["Offers", "MyOffers", "Trades", "Messages", "Feedback"],
   endpoints: (builder) => ({
     searchOffers: builder.query<
       P2POffer[],
       {
-        type: 'buy' | 'sell',
-        userId?: string,
-        crypto?: string,
-        fiat?: string,
-        paymentMethod?: string,
-        page?: number,
-        limit?: number
+        type: "buy" | "sell";
+        userId?: string;
+        crypto?: string;
+        fiat?: string;
+        paymentMethod?: string;
+        page?: number;
+        limit?: number;
       }
     >({
-      query: ({ type, crypto, fiat, paymentMethod, page = 0, limit = 5, userId }) => {
+      query: ({
+        type,
+        crypto,
+        fiat,
+        paymentMethod,
+        page = 0,
+        limit = 5,
+        userId,
+      }) => {
         let url = `/offers?type=${type}&page=${page}&limit=${limit}`;
         if (crypto) url += `&crypto=${crypto}`;
         if (fiat) url += `&fiat=${fiat}`;
@@ -123,21 +138,29 @@ export const p2pApi = createApi({
         if (userId) url += `&userId=${userId}`;
         return url;
       },
-      providesTags: ['Offers'],
+      providesTags: ["Offers"],
     }),
 
     getPairList: builder.query<Record<string, any>, void>({
       query: () => `/getPairs`,
-      providesTags: ['Offers'],
+      providesTags: ["Offers"],
     }),
 
     getOfferById: builder.query<P2POffer, string>({
       query: (id) => `/offer/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Offers', id }],
+      providesTags: (result, error, id) => [{ type: "Offers", id }],
     }),
 
     getMyOffers: builder.query<P2POffer[], any>({
-      query: ({ side, crypto, fiat, paymentMethod, status, page = 0, limit = 5, }) => {
+      query: ({
+        side,
+        crypto,
+        fiat,
+        paymentMethod,
+        status,
+        page = 0,
+        limit = 5,
+      }) => {
         let url = `/my-offers?page=${page}&limit=${limit}`;
         if (status) url += `&status=${status}`;
         if (crypto) url += `&crypto=${crypto}`;
@@ -146,41 +169,52 @@ export const p2pApi = createApi({
         if (paymentMethod) url += `&paymentMethod=${paymentMethod}`;
         return url;
       },
-      providesTags: ['MyOffers'],
+      providesTags: ["MyOffers"],
     }),
 
     createOffer: builder.mutation<P2POffer, CreateOfferRequest>({
       query: (offer) => ({
-        url: '/offer',
-        method: 'POST',
+        url: "/offer",
+        method: "POST",
         body: offer,
       }),
-      invalidatesTags: ['MyOffers', 'Offers'],
+      invalidatesTags: ["MyOffers", "Offers"],
     }),
 
-    updateOffer: builder.mutation<P2POffer, { id: string; update: Partial<CreateOfferRequest> }>({
+    updateOffer: builder.mutation<
+      P2POffer,
+      { id: string; update: Partial<CreateOfferRequest> }
+    >({
       query: ({ id, update }) => ({
         url: `/offer/${id}`,
-        method: 'PUT',
+        method: "PUT",
         body: update,
       }),
       invalidatesTags: (result, error, { id }) => [
-        'MyOffers',
-        'Offers',
-        { type: 'Offers', id },
+        "MyOffers",
+        "Offers",
+        { type: "Offers", id },
       ],
     }),
 
     deleteOffer: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
         url: `/offer/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['MyOffers', 'Offers'],
+      invalidatesTags: ["MyOffers", "Offers"],
     }),
 
     getMyTrades: builder.query<P2PTrade[], any>({
-      query: ({ side, crypto, fiat, paymentMethod, status, page = 0, limit = 5, }) => {
+      query: ({
+        side,
+        crypto,
+        fiat,
+        paymentMethod,
+        status,
+        page = 0,
+        limit = 5,
+      }) => {
         let url = `/my-trades?page=${page}&limit=${limit}`;
         if (status) url += `&status=${status}`;
         if (crypto) url += `&crypto=${crypto}`;
@@ -189,65 +223,114 @@ export const p2pApi = createApi({
         if (paymentMethod) url += `&paymentMethod=${paymentMethod}`;
         return url;
       },
-      providesTags: ['Trades'],
+      providesTags: ["Trades"],
     }),
 
     getTrade: builder.query<any, any>({
-      query: ({tradeId}) => `/trade/${tradeId}`,
-      providesTags: (result, error, tradeId) => [{ type: 'Trades', tradeId }],
+      query: ({ tradeId }) => `/trade/${tradeId}`,
+      providesTags: (result, error, tradeId) => [{ type: "Trades", tradeId }],
     }),
 
     createTrade: builder.mutation<P2PTrade, CreateTradeRequest>({
       query: (trade) => ({
-        url: '/trade',
-        method: 'POST',
+        url: "/trade",
+        method: "POST",
         body: trade,
       }),
-      invalidatesTags: ['Trades', 'Offers'],
+      invalidatesTags: ["Trades", "Offers"],
     }),
 
-    updateTradeStatus: builder.mutation<P2PTrade, { id: string; status: P2PTrade['status'] }>({
+    updateTradeStatus: builder.mutation<P2PTrade, any>({
       query: ({ id, status }) => ({
-        url: `/trade/${id}/status`,
-        method: 'PUT',
-        body: { status },
+        url: `/trade/${id}`,
       }),
-      invalidatesTags: (result, error, { id }) => ['Trades', { type: 'Trades', id }],
+      invalidatesTags: (result, error, { id }) => [
+        "Trades",
+        { type: "Trades", id },
+      ],
     }),
 
-    getTradeMessages: builder.query<P2PTradeMessage[], { tradeId: string; page?: number; limit?: number }>({
-      query: ({ tradeId, page = 1, limit = 1000 }) => `/trade/${tradeId}/messages?page=${page}&limit=${limit}`,
-      providesTags: (result, error, { tradeId }) => [{ type: 'Messages', id: tradeId }],
+    tradeComplete: builder.mutation<P2PTrade, any>({
+      query: ({ id }) => ({
+        url: `/trade/complete/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Trades",
+        { type: "Trades", id },
+      ],
+    }),
+    tradePaid: builder.mutation<P2PTrade, any>({
+      query: ({ id }) => ({
+        url: `/trade/paid/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Trades",
+        { type: "Trades", id },
+      ],
+    }),
+    tradeCancel: builder.mutation<P2PTrade, any>({
+      query: ({ id }) => ({
+        url: `/trade/cancel/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Trades",
+        { type: "Trades", id },
+      ],
+    }),
+    tradeDispute: builder.mutation<P2PTrade, any>({
+      query: ({ id }) => ({
+        url: `/trade/dispute/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Trades",
+        { type: "Trades", id },
+      ],
+    }),
+    getTradeMessages: builder.query<
+      P2PTradeMessage[],
+      { tradeId: string; page?: number; limit?: number }
+    >({
+      query: ({ tradeId, page = 1, limit = 1000 }) =>
+        `/trade/${tradeId}/messages?page=${page}&limit=${limit}`,
+      providesTags: (result, error, { tradeId }) => [
+        { type: "Messages", id: tradeId },
+      ],
     }),
 
     sendMessage: builder.mutation<P2PTradeMessage, SendMessageRequest>({
       query: ({ tradeId, message, attachment }) => {
         const formData = new FormData();
-        formData.append('message', message);
+        formData.append("message", message);
         if (attachment) {
-          formData.append('attachment', attachment);
+          formData.append("attachment", attachment);
         }
 
         return {
           url: `/trade/${tradeId}/message`,
-          method: 'POST',
+          method: "POST",
           body: formData,
         };
       },
-      invalidatesTags: (result, error, { tradeId }) => [{ type: 'Messages', id: tradeId }],
+      invalidatesTags: (result, error, { tradeId }) => [
+        { type: "Messages", id: tradeId },
+      ],
     }),
 
     leaveFeedback: builder.mutation<{ success: boolean }, FeedbackRequest>({
       query: (feedback) => ({
-        url: '/feedback',
-        method: 'POST',
+        url: "/feedback",
+        method: "POST",
         body: feedback,
       }),
-      invalidatesTags: ['Feedback'],
+      invalidatesTags: ["Feedback"],
     }),
 
     getPaymentMethods: builder.query<string[], void>({
-      query: () => '/payment-methods',
+      query: () => "/payment-methods",
     }),
   }),
 });
@@ -268,4 +351,8 @@ export const {
   useSendMessageMutation,
   useLeaveFeedbackMutation,
   useGetPaymentMethodsQuery,
-} = p2pApi; 
+  useTradeCompleteMutation,
+  useTradePaidMutation,
+  useTradeCancelMutation,
+  useTradeDisputeMutation,
+} = p2pApi;

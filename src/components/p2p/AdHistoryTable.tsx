@@ -75,6 +75,7 @@ export default function AdsHistoryTable({ side, crypto, fiat, paymentMethod }) {
         <table className="table-main">
           <thead className="table-header">
             <tr>
+              <th className="table-header-cell">createdAt</th>
               <th className="table-header-cell">Post Id</th>
               <th className="table-header-cell">Advertiser</th>
               <th className="table-header-cell">Type</th>
@@ -90,6 +91,11 @@ export default function AdsHistoryTable({ side, crypto, fiat, paymentMethod }) {
             {!isLoadingOffers &&
               offersList.map((offer) => (
                 <tr key={offer?.postId} className="table-row">
+                  <td className="table-cell">
+                    <div className="text-sm font-medium text-white">
+                      {new Date(offer?.createdAt).toLocaleString()}
+                    </div>
+                  </td>
                   <td className="table-cell">
                     <div className="text-sm font-medium text-white">
                       {offer.postCode}

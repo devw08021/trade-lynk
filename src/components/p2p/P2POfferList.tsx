@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { UserCircleIcon, CheckCircleIcon, StarIcon } from '@heroicons/react/24/outline';
-import Pagination from '@/components/ui/pagination'
+import React from "react";
+import Link from "next/link";
+import {
+  UserCircleIcon,
+  CheckCircleIcon,
+  StarIcon,
+} from "@heroicons/react/24/outline";
+import Pagination from "@/components/ui/pagination";
 interface P2POffer {
   id: string;
   creator: {
@@ -23,21 +27,28 @@ interface P2POffer {
   paymentMethods: string[];
   terms: string;
   autoReply?: string;
-  status: string;//'active' | 'inactive' | 'completed';
+  status: string; //'active' | 'inactive' | 'completed';
   createdAt: string;
   updatedAt: string;
 }
 
 interface P2POfferListProps {
   offers: P2POffer[];
-  offersCount: number,
+  offersCount: number;
   tradeType: string; // 'buy' or 'sell'
   page: number;
   setTrade: (trade: any) => void;
   setPage: (page: number) => void;
 }
 
-export default function P2POfferList({ offers, tradeType, offersCount, page, setPage, setTrade }: P2POfferListProps) {
+export default function P2POfferList({
+  offers,
+  tradeType,
+  offersCount,
+  page,
+  setPage,
+  setTrade,
+}: P2POfferListProps) {
   return (
     <div className="mt-6">
       <div className="table-container">
@@ -71,7 +82,9 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
                         <span className="mx-2">•</span>
                         <span className="flex items-center">
                           <StarIcon className="h-4 w-4 status-positive mr-1" />
-                          <span className="status-positive">{offer?.creators?.positiveRating}%</span>
+                          <span className="status-positive">
+                            {offer?.creators?.positiveRating}%
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -112,7 +125,10 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
                 </td>
 
                 <td className="table-cell max-w-xs">
-                  <div className="text-sm text-gradient-secondary truncate" title={offer.description}>
+                  <div
+                    className="text-sm text-gradient-secondary truncate"
+                    title={offer.description}
+                  >
                     {offer.description}
                   </div>
                 </td>
@@ -121,10 +137,11 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
                   <Link
                     href={"#"}
                     onClick={() => setTrade(offer)}
-                    className={`btn-primary text-sm px-4 py-2 ${tradeType === 'sell' ? 'bg-red-600 hover:bg-red-700' : ''
-                      }`}
+                    className={`btn-primary text-sm px-4 py-2 ${
+                      tradeType === "sell" ? "bg-red-600 hover:bg-red-700" : ""
+                    }`}
                   >
-                    {tradeType === 'buy' ? 'Buy' : 'Sell'} {offer.firstCoin}
+                    {tradeType === "buy" ? "Buy" : "Sell"} {offer.firstCoin}
                   </Link>
                 </td>
               </tr>
@@ -151,14 +168,23 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
 
         <div className="card text-center">
           <div className="text-lg font-light text-gradient-primary mb-1">
-            {Math.round(offers.reduce((sum, offer) => sum + offer?.creator?.positiveRating, 0) / offers?.length)}%
+            {Math.round(
+              offers.reduce(
+                (sum, offer) => sum + offer?.creator?.positiveRating,
+                0,
+              ) / offers?.length,
+            )}
+            %
           </div>
           <div className="text-sm text-gradient-secondary">Avg. Rating</div>
         </div>
 
         <div className="card text-center">
           <div className="text-lg font-light text-gradient-primary mb-1">
-            ${Math.min(...offers.map(offer => parseFloat(offer.price))).toFixed(2)}
+            $
+            {Math.min(
+              ...offers.map((offer) => parseFloat(offer.price)),
+            ).toFixed(2)}
           </div>
           <div className="text-sm text-gradient-secondary">Best Price</div>
         </div>
@@ -171,9 +197,12 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
           <div className="flex items-start">
             <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
             <div>
-              <h4 className="font-medium text-brand text-sm mb-1">Check Trader Reputation</h4>
+              <h4 className="font-medium text-brand text-sm mb-1">
+                Check Trader Reputation
+              </h4>
               <p className="text-gradient-secondary text-sm">
-                Always review the trader's completion rate and feedback before initiating a trade.
+                Always review the trader's completion rate and feedback before
+                initiating a trade.
               </p>
             </div>
           </div>
@@ -181,9 +210,12 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
           <div className="flex items-start">
             <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
             <div>
-              <h4 className="font-medium text-brand text-sm mb-1">Read Terms Carefully</h4>
+              <h4 className="font-medium text-brand text-sm mb-1">
+                Read Terms Carefully
+              </h4>
               <p className="text-gradient-secondary text-sm">
-                Each offer has specific terms and conditions. Make sure you understand them before trading.
+                Each offer has specific terms and conditions. Make sure you
+                understand them before trading.
               </p>
             </div>
           </div>
@@ -191,9 +223,12 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
           <div className="flex items-start">
             <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
             <div>
-              <h4 className="font-medium text-brand text-sm mb-1">Use Escrow Protection</h4>
+              <h4 className="font-medium text-brand text-sm mb-1">
+                Use Escrow Protection
+              </h4>
               <p className="text-gradient-secondary text-sm">
-                All trades are protected by escrow. Never release funds outside the platform.
+                All trades are protected by escrow. Never release funds outside
+                the platform.
               </p>
             </div>
           </div>
@@ -201,9 +236,12 @@ export default function P2POfferList({ offers, tradeType, offersCount, page, set
           <div className="flex items-start">
             <div className="flex-shrink-0 w-2 h-2 bg-brand rounded-full mt-2 mr-3"></div>
             <div>
-              <h4 className="font-medium text-brand text-sm mb-1">Communicate Clearly</h4>
+              <h4 className="font-medium text-brand text-sm mb-1">
+                Communicate Clearly
+              </h4>
               <p className="text-gradient-secondary text-sm">
-                Use the chat system to communicate with your trading partner throughout the process.
+                Use the chat system to communicate with your trading partner
+                throughout the process.
               </p>
             </div>
           </div>
